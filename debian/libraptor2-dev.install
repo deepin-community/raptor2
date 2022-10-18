@@ -1,0 +1,5 @@
+debian/tmp/usr/include/raptor2/*.h
+debian/tmp/usr/lib/*/libraptor2.a
+debian/tmp/usr/lib/*/libraptor2.so
+debian/tmp/usr/lib/*/pkgconfig/raptor2.pc
+
