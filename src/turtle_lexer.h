@@ -1,10 +1,14 @@
+#ifdef HAVE_CONFIG_H
+#include <raptor_config.h>
+#endif
+
 #ifndef turtle_lexer_HEADER_H
 #define turtle_lexer_HEADER_H 1
 #define turtle_lexer_IN_HEADER 1
 
-#line 6 "turtle_lexer.h"
+#line 10 "turtle_lexer.h"
 
-#line 8 "turtle_lexer.h"
+#line 12 "turtle_lexer.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -12,10 +16,232 @@
 
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
-#define YY_FLEX_MINOR_VERSION 5
-#define YY_FLEX_SUBMINOR_VERSION 35
+#define YY_FLEX_MINOR_VERSION 6
+#define YY_FLEX_SUBMINOR_VERSION 4
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
+#endif
+
+#ifdef yy_create_buffer
+#define turtle_lexer__create_buffer_ALREADY_DEFINED
+#else
+#define yy_create_buffer turtle_lexer__create_buffer
+#endif
+
+#ifdef yy_delete_buffer
+#define turtle_lexer__delete_buffer_ALREADY_DEFINED
+#else
+#define yy_delete_buffer turtle_lexer__delete_buffer
+#endif
+
+#ifdef yy_scan_buffer
+#define turtle_lexer__scan_buffer_ALREADY_DEFINED
+#else
+#define yy_scan_buffer turtle_lexer__scan_buffer
+#endif
+
+#ifdef yy_scan_string
+#define turtle_lexer__scan_string_ALREADY_DEFINED
+#else
+#define yy_scan_string turtle_lexer__scan_string
+#endif
+
+#ifdef yy_scan_bytes
+#define turtle_lexer__scan_bytes_ALREADY_DEFINED
+#else
+#define yy_scan_bytes turtle_lexer__scan_bytes
+#endif
+
+#ifdef yy_init_buffer
+#define turtle_lexer__init_buffer_ALREADY_DEFINED
+#else
+#define yy_init_buffer turtle_lexer__init_buffer
+#endif
+
+#ifdef yy_flush_buffer
+#define turtle_lexer__flush_buffer_ALREADY_DEFINED
+#else
+#define yy_flush_buffer turtle_lexer__flush_buffer
+#endif
+
+#ifdef yy_load_buffer_state
+#define turtle_lexer__load_buffer_state_ALREADY_DEFINED
+#else
+#define yy_load_buffer_state turtle_lexer__load_buffer_state
+#endif
+
+#ifdef yy_switch_to_buffer
+#define turtle_lexer__switch_to_buffer_ALREADY_DEFINED
+#else
+#define yy_switch_to_buffer turtle_lexer__switch_to_buffer
+#endif
+
+#ifdef yypush_buffer_state
+#define turtle_lexer_push_buffer_state_ALREADY_DEFINED
+#else
+#define yypush_buffer_state turtle_lexer_push_buffer_state
+#endif
+
+#ifdef yypop_buffer_state
+#define turtle_lexer_pop_buffer_state_ALREADY_DEFINED
+#else
+#define yypop_buffer_state turtle_lexer_pop_buffer_state
+#endif
+
+#ifdef yyensure_buffer_stack
+#define turtle_lexer_ensure_buffer_stack_ALREADY_DEFINED
+#else
+#define yyensure_buffer_stack turtle_lexer_ensure_buffer_stack
+#endif
+
+#ifdef yylex
+#define turtle_lexer_lex_ALREADY_DEFINED
+#else
+#define yylex turtle_lexer_lex
+#endif
+
+#ifdef yyrestart
+#define turtle_lexer_restart_ALREADY_DEFINED
+#else
+#define yyrestart turtle_lexer_restart
+#endif
+
+#ifdef yylex_init
+#define turtle_lexer_lex_init_ALREADY_DEFINED
+#else
+#define yylex_init turtle_lexer_lex_init
+#endif
+
+#ifdef yylex_init_extra
+#define turtle_lexer_lex_init_extra_ALREADY_DEFINED
+#else
+#define yylex_init_extra turtle_lexer_lex_init_extra
+#endif
+
+#ifdef yylex_destroy
+#define turtle_lexer_lex_destroy_ALREADY_DEFINED
+#else
+#define yylex_destroy turtle_lexer_lex_destroy
+#endif
+
+#ifdef yyget_debug
+#define turtle_lexer_get_debug_ALREADY_DEFINED
+#else
+#define yyget_debug turtle_lexer_get_debug
+#endif
+
+#ifdef yyset_debug
+#define turtle_lexer_set_debug_ALREADY_DEFINED
+#else
+#define yyset_debug turtle_lexer_set_debug
+#endif
+
+#ifdef yyget_extra
+#define turtle_lexer_get_extra_ALREADY_DEFINED
+#else
+#define yyget_extra turtle_lexer_get_extra
+#endif
+
+#ifdef yyset_extra
+#define turtle_lexer_set_extra_ALREADY_DEFINED
+#else
+#define yyset_extra turtle_lexer_set_extra
+#endif
+
+#ifdef yyget_in
+#define turtle_lexer_get_in_ALREADY_DEFINED
+#else
+#define yyget_in turtle_lexer_get_in
+#endif
+
+#ifdef yyset_in
+#define turtle_lexer_set_in_ALREADY_DEFINED
+#else
+#define yyset_in turtle_lexer_set_in
+#endif
+
+#ifdef yyget_out
+#define turtle_lexer_get_out_ALREADY_DEFINED
+#else
+#define yyget_out turtle_lexer_get_out
+#endif
+
+#ifdef yyset_out
+#define turtle_lexer_set_out_ALREADY_DEFINED
+#else
+#define yyset_out turtle_lexer_set_out
+#endif
+
+#ifdef yyget_leng
+#define turtle_lexer_get_leng_ALREADY_DEFINED
+#else
+#define yyget_leng turtle_lexer_get_leng
+#endif
+
+#ifdef yyget_text
+#define turtle_lexer_get_text_ALREADY_DEFINED
+#else
+#define yyget_text turtle_lexer_get_text
+#endif
+
+#ifdef yyget_lineno
+#define turtle_lexer_get_lineno_ALREADY_DEFINED
+#else
+#define yyget_lineno turtle_lexer_get_lineno
+#endif
+
+#ifdef yyset_lineno
+#define turtle_lexer_set_lineno_ALREADY_DEFINED
+#else
+#define yyset_lineno turtle_lexer_set_lineno
+#endif
+
+#ifdef yyget_column
+#define turtle_lexer_get_column_ALREADY_DEFINED
+#else
+#define yyget_column turtle_lexer_get_column
+#endif
+
+#ifdef yyset_column
+#define turtle_lexer_set_column_ALREADY_DEFINED
+#else
+#define yyset_column turtle_lexer_set_column
+#endif
+
+#ifdef yywrap
+#define turtle_lexer_wrap_ALREADY_DEFINED
+#else
+#define yywrap turtle_lexer_wrap
+#endif
+
+#ifdef yyget_lval
+#define turtle_lexer_get_lval_ALREADY_DEFINED
+#else
+#define yyget_lval turtle_lexer_get_lval
+#endif
+
+#ifdef yyset_lval
+#define turtle_lexer_set_lval_ALREADY_DEFINED
+#else
+#define yyset_lval turtle_lexer_set_lval
+#endif
+
+#ifdef yyalloc
+#define turtle_lexer_alloc_ALREADY_DEFINED
+#else
+#define yyalloc turtle_lexer_alloc
+#endif
+
+#ifdef yyrealloc
+#define turtle_lexer_realloc_ALREADY_DEFINED
+#else
+#define yyrealloc turtle_lexer_realloc
+#endif
+
+#ifdef yyfree
+#define turtle_lexer_free_ALREADY_DEFINED
+#else
+#define yyfree turtle_lexer_free
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
@@ -88,29 +314,23 @@ typedef unsigned int flex_uint32_t;
 #define UINT32_MAX             (4294967295U)
 #endif
 
+#ifndef SIZE_MAX
+#define SIZE_MAX               (~(size_t)0)
+#endif
+
 #endif /* ! C99 */
 
 #endif /* ! FLEXINT_H */
 
-#ifdef __cplusplus
+/* begin standard C++ headers. */
 
-/* The "const" storage-class-modifier is valid. */
-#define YY_USE_CONST
-
-#else	/* ! __cplusplus */
-
-/* C99 requires __STDC__ to be defined as 1. */
-#if defined (__STDC__)
-
-#define YY_USE_CONST
-
-#endif	/* defined (__STDC__) */
-#endif	/* ! __cplusplus */
-
-#ifdef YY_USE_CONST
+/* TODO: this is always defined, so inline it */
 #define yyconst const
+
+#if defined(__GNUC__) && __GNUC__ >= 3
+#define yynoreturn __attribute__((__noreturn__))
 #else
-#define yyconst
+#define yynoreturn
 #endif
 
 /* An opaque pointer. */
@@ -165,7 +385,7 @@ struct yy_buffer_state
 	/* Size of input buffer in bytes, not including room for EOB
 	 * characters.
 	 */
-	yy_size_t yy_buf_size;
+	int yy_buf_size;
 
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
@@ -193,7 +413,7 @@ struct yy_buffer_state
 
     int yy_bs_lineno; /**< The line count. */
     int yy_bs_column; /**< The column count. */
-    
+
 	/* Whether to try to fill the input buffer when we reach the
 	 * end of it.
 	 */
@@ -204,21 +424,21 @@ struct yy_buffer_state
 	};
 #endif /* !YY_STRUCT_YY_BUFFER_STATE */
 
-void turtle_lexer_restart (FILE *input_file ,yyscan_t yyscanner );
-void turtle_lexer__switch_to_buffer (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
-YY_BUFFER_STATE turtle_lexer__create_buffer (FILE *file,int size ,yyscan_t yyscanner );
-void turtle_lexer__delete_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
-void turtle_lexer__flush_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
-void turtle_lexer_push_buffer_state (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
-void turtle_lexer_pop_buffer_state (yyscan_t yyscanner );
+void yyrestart ( FILE *input_file , yyscan_t yyscanner );
+void yy_switch_to_buffer ( YY_BUFFER_STATE new_buffer , yyscan_t yyscanner );
+YY_BUFFER_STATE yy_create_buffer ( FILE *file, int size , yyscan_t yyscanner );
+void yy_delete_buffer ( YY_BUFFER_STATE b , yyscan_t yyscanner );
+void yy_flush_buffer ( YY_BUFFER_STATE b , yyscan_t yyscanner );
+void yypush_buffer_state ( YY_BUFFER_STATE new_buffer , yyscan_t yyscanner );
+void yypop_buffer_state ( yyscan_t yyscanner );
 
-YY_BUFFER_STATE turtle_lexer__scan_buffer (char *base,yy_size_t size ,yyscan_t yyscanner );
-YY_BUFFER_STATE turtle_lexer__scan_string (yyconst char *yy_str ,yyscan_t yyscanner );
-YY_BUFFER_STATE turtle_lexer__scan_bytes (yyconst char *bytes,int len ,yyscan_t yyscanner );
+YY_BUFFER_STATE yy_scan_buffer ( char *base, yy_size_t size , yyscan_t yyscanner );
+YY_BUFFER_STATE yy_scan_string ( const char *yy_str , yyscan_t yyscanner );
+YY_BUFFER_STATE yy_scan_bytes ( const char *bytes, yy_size_t len , yyscan_t yyscanner );
 
-void *turtle_lexer_alloc (yy_size_t ,yyscan_t yyscanner );
-void *turtle_lexer_realloc (void *,yy_size_t ,yyscan_t yyscanner );
-void turtle_lexer_free (void * ,yyscan_t yyscanner );
+void *yyalloc ( yy_size_t , yyscan_t yyscanner );
+void *yyrealloc ( void *, yy_size_t , yyscan_t yyscanner );
+void yyfree ( void * , yyscan_t yyscanner );
 
 /* Begin user sect3 */
 
@@ -237,51 +457,53 @@ void turtle_lexer_free (void * ,yyscan_t yyscanner );
  * down here because we want the user's section 1 to have been scanned first.
  * The user has a chance to override it with an option.
  */
+#ifndef YY_NO_UNISTD_H
 #include <unistd.h>
+#endif
 #endif
 
 #define YY_EXTRA_TYPE raptor_parser*
 
-int turtle_lexer_lex_init (yyscan_t* scanner);
+int yylex_init (yyscan_t* scanner);
 
-int turtle_lexer_lex_init_extra (YY_EXTRA_TYPE user_defined,yyscan_t* scanner);
+int yylex_init_extra ( YY_EXTRA_TYPE user_defined, yyscan_t* scanner);
 
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
 
-int turtle_lexer_lex_destroy (yyscan_t yyscanner );
+int yylex_destroy ( yyscan_t yyscanner );
 
-int turtle_lexer_get_debug (yyscan_t yyscanner );
+int yyget_debug ( yyscan_t yyscanner );
 
-void turtle_lexer_set_debug (int debug_flag ,yyscan_t yyscanner );
+void yyset_debug ( int debug_flag , yyscan_t yyscanner );
 
-YY_EXTRA_TYPE turtle_lexer_get_extra (yyscan_t yyscanner );
+YY_EXTRA_TYPE yyget_extra ( yyscan_t yyscanner );
 
-void turtle_lexer_set_extra (YY_EXTRA_TYPE user_defined ,yyscan_t yyscanner );
+void yyset_extra ( YY_EXTRA_TYPE user_defined , yyscan_t yyscanner );
 
-FILE *turtle_lexer_get_in (yyscan_t yyscanner );
+FILE *yyget_in ( yyscan_t yyscanner );
 
-void turtle_lexer_set_in  (FILE * in_str ,yyscan_t yyscanner );
+void yyset_in  ( FILE * _in_str , yyscan_t yyscanner );
 
-FILE *turtle_lexer_get_out (yyscan_t yyscanner );
+FILE *yyget_out ( yyscan_t yyscanner );
 
-void turtle_lexer_set_out  (FILE * out_str ,yyscan_t yyscanner );
+void yyset_out  ( FILE * _out_str , yyscan_t yyscanner );
 
-int turtle_lexer_get_leng (yyscan_t yyscanner );
+			int yyget_leng ( yyscan_t yyscanner );
 
-char *turtle_lexer_get_text (yyscan_t yyscanner );
+char *yyget_text ( yyscan_t yyscanner );
 
-int turtle_lexer_get_lineno (yyscan_t yyscanner );
+int yyget_lineno ( yyscan_t yyscanner );
 
-void turtle_lexer_set_lineno (int line_number ,yyscan_t yyscanner );
+void yyset_lineno ( int _line_number , yyscan_t yyscanner );
 
-int turtle_lexer_get_column  (yyscan_t yyscanner );
+int yyget_column  ( yyscan_t yyscanner );
 
-void turtle_lexer_set_column (int column_no ,yyscan_t yyscanner );
+void yyset_column ( int _column_no , yyscan_t yyscanner );
 
-YYSTYPE * turtle_lexer_get_lval (yyscan_t yyscanner );
+YYSTYPE * yyget_lval ( yyscan_t yyscanner );
 
-void turtle_lexer_set_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
+void yyset_lval ( YYSTYPE * yylval_param , yyscan_t yyscanner );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -289,18 +511,18 @@ void turtle_lexer_set_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
 
 #ifndef YY_SKIP_YYWRAP
 #ifdef __cplusplus
-extern "C" int turtle_lexer_wrap (yyscan_t yyscanner );
+extern "C" int yywrap ( yyscan_t yyscanner );
 #else
-extern int turtle_lexer_wrap (yyscan_t yyscanner );
+extern int yywrap ( yyscan_t yyscanner );
 #endif
 #endif
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char *,yyconst char *,int ,yyscan_t yyscanner);
+static void yy_flex_strncpy ( char *, const char *, int , yyscan_t yyscanner);
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
+static int yy_flex_strlen ( const char * , yyscan_t yyscanner);
 #endif
 
 #ifndef YY_NO_INPUT
@@ -328,10 +550,10 @@ static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
 #ifndef YY_DECL
 #define YY_DECL_IS_OURS 1
 
-extern int turtle_lexer_lex \
-               (YYSTYPE * yylval_param ,yyscan_t yyscanner);
+extern int yylex \
+               (YYSTYPE * yylval_param , yyscan_t yyscanner);
 
-#define YY_DECL int turtle_lexer_lex \
+#define YY_DECL int yylex \
                (YYSTYPE * yylval_param , yyscan_t yyscanner)
 #endif /* !YY_DECL */
 
@@ -349,9 +571,154 @@ extern int turtle_lexer_lex \
 #undef YY_DECL
 #endif
 
-#line 536 "./turtle_lexer.l"
+#ifndef turtle_lexer__create_buffer_ALREADY_DEFINED
+#undef yy_create_buffer
+#endif
+#ifndef turtle_lexer__delete_buffer_ALREADY_DEFINED
+#undef yy_delete_buffer
+#endif
+#ifndef turtle_lexer__scan_buffer_ALREADY_DEFINED
+#undef yy_scan_buffer
+#endif
+#ifndef turtle_lexer__scan_string_ALREADY_DEFINED
+#undef yy_scan_string
+#endif
+#ifndef turtle_lexer__scan_bytes_ALREADY_DEFINED
+#undef yy_scan_bytes
+#endif
+#ifndef turtle_lexer__init_buffer_ALREADY_DEFINED
+#undef yy_init_buffer
+#endif
+#ifndef turtle_lexer__flush_buffer_ALREADY_DEFINED
+#undef yy_flush_buffer
+#endif
+#ifndef turtle_lexer__load_buffer_state_ALREADY_DEFINED
+#undef yy_load_buffer_state
+#endif
+#ifndef turtle_lexer__switch_to_buffer_ALREADY_DEFINED
+#undef yy_switch_to_buffer
+#endif
+#ifndef turtle_lexer_push_buffer_state_ALREADY_DEFINED
+#undef yypush_buffer_state
+#endif
+#ifndef turtle_lexer_pop_buffer_state_ALREADY_DEFINED
+#undef yypop_buffer_state
+#endif
+#ifndef turtle_lexer_ensure_buffer_stack_ALREADY_DEFINED
+#undef yyensure_buffer_stack
+#endif
+#ifndef turtle_lexer_lex_ALREADY_DEFINED
+#undef yylex
+#endif
+#ifndef turtle_lexer_restart_ALREADY_DEFINED
+#undef yyrestart
+#endif
+#ifndef turtle_lexer_lex_init_ALREADY_DEFINED
+#undef yylex_init
+#endif
+#ifndef turtle_lexer_lex_init_extra_ALREADY_DEFINED
+#undef yylex_init_extra
+#endif
+#ifndef turtle_lexer_lex_destroy_ALREADY_DEFINED
+#undef yylex_destroy
+#endif
+#ifndef turtle_lexer_get_debug_ALREADY_DEFINED
+#undef yyget_debug
+#endif
+#ifndef turtle_lexer_set_debug_ALREADY_DEFINED
+#undef yyset_debug
+#endif
+#ifndef turtle_lexer_get_extra_ALREADY_DEFINED
+#undef yyget_extra
+#endif
+#ifndef turtle_lexer_set_extra_ALREADY_DEFINED
+#undef yyset_extra
+#endif
+#ifndef turtle_lexer_get_in_ALREADY_DEFINED
+#undef yyget_in
+#endif
+#ifndef turtle_lexer_set_in_ALREADY_DEFINED
+#undef yyset_in
+#endif
+#ifndef turtle_lexer_get_out_ALREADY_DEFINED
+#undef yyget_out
+#endif
+#ifndef turtle_lexer_set_out_ALREADY_DEFINED
+#undef yyset_out
+#endif
+#ifndef turtle_lexer_get_leng_ALREADY_DEFINED
+#undef yyget_leng
+#endif
+#ifndef turtle_lexer_get_text_ALREADY_DEFINED
+#undef yyget_text
+#endif
+#ifndef turtle_lexer_get_lineno_ALREADY_DEFINED
+#undef yyget_lineno
+#endif
+#ifndef turtle_lexer_set_lineno_ALREADY_DEFINED
+#undef yyset_lineno
+#endif
+#ifndef turtle_lexer_get_column_ALREADY_DEFINED
+#undef yyget_column
+#endif
+#ifndef turtle_lexer_set_column_ALREADY_DEFINED
+#undef yyset_column
+#endif
+#ifndef turtle_lexer_wrap_ALREADY_DEFINED
+#undef yywrap
+#endif
+#ifndef turtle_lexer_get_lval_ALREADY_DEFINED
+#undef yyget_lval
+#endif
+#ifndef turtle_lexer_set_lval_ALREADY_DEFINED
+#undef yyset_lval
+#endif
+#ifndef turtle_lexer_get_lloc_ALREADY_DEFINED
+#undef yyget_lloc
+#endif
+#ifndef turtle_lexer_set_lloc_ALREADY_DEFINED
+#undef yyset_lloc
+#endif
+#ifndef turtle_lexer_alloc_ALREADY_DEFINED
+#undef yyalloc
+#endif
+#ifndef turtle_lexer_realloc_ALREADY_DEFINED
+#undef yyrealloc
+#endif
+#ifndef turtle_lexer_free_ALREADY_DEFINED
+#undef yyfree
+#endif
+#ifndef turtle_lexer_text_ALREADY_DEFINED
+#undef yytext
+#endif
+#ifndef turtle_lexer_leng_ALREADY_DEFINED
+#undef yyleng
+#endif
+#ifndef turtle_lexer_in_ALREADY_DEFINED
+#undef yyin
+#endif
+#ifndef turtle_lexer_out_ALREADY_DEFINED
+#undef yyout
+#endif
+#ifndef turtle_lexer__flex_debug_ALREADY_DEFINED
+#undef yy_flex_debug
+#endif
+#ifndef turtle_lexer_lineno_ALREADY_DEFINED
+#undef yylineno
+#endif
+#ifndef turtle_lexer_tables_fload_ALREADY_DEFINED
+#undef yytables_fload
+#endif
+#ifndef turtle_lexer_tables_destroy_ALREADY_DEFINED
+#undef yytables_destroy
+#endif
+#ifndef turtle_lexer_TABLES_NAME_ALREADY_DEFINED
+#undef yyTABLES_NAME
+#endif
+
+#line 542 "./turtle_lexer.l"
 
 
-#line 356 "turtle_lexer.h"
+#line 723 "turtle_lexer.h"
 #undef turtle_lexer_IN_HEADER
 #endif /* turtle_lexer_HEADER_H */

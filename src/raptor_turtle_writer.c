@@ -50,12 +50,7 @@
 #ifndef STANDALONE
 
 
-typedef enum {
-  TURTLE_WRITER_AUTO_INDENT = 1,
-} raptor_turtle_writer_flags;
-
-
-#define TURTLE_WRITER_AUTO_INDENT(turtle_writer) ((turtle_writer->flags & TURTLE_WRITER_AUTO_INDENT) != 0)
+#define TURTLE_WRITER_AUTO_INDENT(turtle_writer) ((turtle_writer->flags & TURTLE_WRITER_FLAG_AUTO_INDENT) != 0)
 
 struct raptor_turtle_writer_s {
   raptor_world* world;
@@ -129,6 +124,41 @@ raptor_turtle_writer_newline(raptor_turtle_writer *turtle_writer)
 }
 
 
+void
+raptor_turtle_writer_csv_string(raptor_turtle_writer *turtle_writer,
+                                const unsigned char *string)
+{
+  raptor_iostream *iostr = turtle_writer->iostr;
+  size_t len = strlen((const char*)string);
+  const char delim = '\x22';
+  int quoting_needed = 0;
+  size_t i;
+
+  for(i = 0; i < len; i++) {
+    char c = string[i];
+    /* Quoting needed for delim (double quote), comma, linefeed or return */
+    if(c == delim   || c == ',' || c == '\r' || c == '\n') {
+      quoting_needed++;
+      break;
+    }
+  }
+  if(!quoting_needed) {
+    raptor_iostream_counted_string_write(string, len, iostr);
+    return;
+  }
+
+  raptor_iostream_write_byte(delim, iostr);
+  for(i = 0; i < len; i++) {
+    char c = string[i];
+    if(c == delim)
+      raptor_iostream_write_byte(delim, iostr);
+    raptor_iostream_write_byte(c, iostr);
+  }
+  raptor_iostream_write_byte(delim, iostr);
+
+  return;
+}
+
 /**
  * raptor_new_turtle_writer:
  * @world: raptor_world object
@@ -136,6 +166,7 @@ raptor_turtle_writer_newline(raptor_turtle_writer *turtle_writer)
  * @write_base_uri: non-0 to write '@base' directive to output
  * @nstack: Namespace stack for the writer to start with (or NULL)
  * @iostr: I/O stream to write to
+ * @flags: bitflags from #raptor_turtle_writer_flags
  * 
  * Constructor - Create a new Turtle Writer writing Turtle to a raptor_iostream
  * 
@@ -145,7 +176,8 @@ raptor_turtle_writer*
 raptor_new_turtle_writer(raptor_world* world,
                          raptor_uri* base_uri, int write_base_uri,
                          raptor_namespace_stack *nstack,
-                         raptor_iostream* iostr)
+                         raptor_iostream* iostr,
+                         int flags)
 {
   raptor_turtle_writer* turtle_writer;
 
@@ -174,7 +206,7 @@ raptor_new_turtle_writer(raptor_world* world,
 
   turtle_writer->iostr = iostr;
 
-  turtle_writer->flags = 0;
+  turtle_writer->flags = flags;
   turtle_writer->indent = 2;
 
   turtle_writer->base_uri = NULL;
@@ -208,11 +240,11 @@ raptor_free_turtle_writer(raptor_turtle_writer* turtle_writer)
 
 
 static int
-raptor_turtle_writer_contains_newline(const unsigned char *s)
+raptor_turtle_writer_contains_newline(const unsigned char *s, size_t len)
 {
   size_t i = 0;
 
-  for( ; i < strlen((char*)s); i++)
+  for( ; i < len; i++)
     if(s[i] == '\n')
       return 1;
 
@@ -266,13 +298,18 @@ void
 raptor_turtle_writer_namespace_prefix(raptor_turtle_writer* turtle_writer,
                                       raptor_namespace* ns)
 {
+  int emit_mkr = (turtle_writer->flags & TURTLE_WRITER_FLAG_MKR);
+
   raptor_iostream_string_write("@prefix ", turtle_writer->iostr);
   if(ns->prefix)
     raptor_iostream_string_write(raptor_namespace_get_prefix(ns),
                                  turtle_writer->iostr);
   raptor_iostream_counted_string_write(": ", 2, turtle_writer->iostr);
   raptor_turtle_writer_reference(turtle_writer, raptor_namespace_get_uri(ns));
-  raptor_iostream_counted_string_write(" .\n", 3, turtle_writer->iostr);
+  if(emit_mkr)
+    raptor_iostream_counted_string_write(" ;\n", 3, turtle_writer->iostr);
+  else
+    raptor_iostream_counted_string_write(" .\n", 3, turtle_writer->iostr);
 }
 
 
@@ -287,10 +324,15 @@ void
 raptor_turtle_writer_base(raptor_turtle_writer* turtle_writer,
                           raptor_uri* base_uri)
 {
+  int emit_mkr = (turtle_writer->flags & TURTLE_WRITER_FLAG_MKR);
+
   if(base_uri) {
     raptor_iostream_counted_string_write("@base ", 6, turtle_writer->iostr);
     raptor_turtle_writer_reference(turtle_writer, base_uri);
-    raptor_iostream_counted_string_write(" .\n", 3, turtle_writer->iostr);
+    if(emit_mkr)
+      raptor_iostream_counted_string_write(" ;\n", 3, turtle_writer->iostr);
+    else
+      raptor_iostream_counted_string_write(" .\n", 3, turtle_writer->iostr);
   }
 }
 
@@ -365,7 +407,7 @@ raptor_turtle_writer_quoted_counted_string(raptor_turtle_writer* turtle_writer,
     return 1;
   
   /* Turtle """longstring""" (2) or "string" (1) */
-  if(raptor_turtle_writer_contains_newline(s)) {
+  if(raptor_turtle_writer_contains_newline(s, len)) {
     /* long string */
     flags = RAPTOR_ESCAPED_WRITE_TURTLE_LONG_LITERAL;
     q = quotes;
@@ -373,7 +415,7 @@ raptor_turtle_writer_quoted_counted_string(raptor_turtle_writer* turtle_writer,
   }
 
   raptor_iostream_counted_string_write(q, q_len, turtle_writer->iostr);
-  rc = raptor_string_escaped_write(s, strlen((const char*)s), '"', 
+  rc = raptor_string_escaped_write(s, len, '"',
                                    flags, turtle_writer->iostr);
   raptor_iostream_counted_string_write(q, q_len, turtle_writer->iostr);
 
@@ -537,9 +579,9 @@ raptor_turtle_writer_set_option(raptor_turtle_writer *turtle_writer,
   switch(option) {
     case RAPTOR_OPTION_WRITER_AUTO_INDENT:
       if(value)
-        turtle_writer->flags |= TURTLE_WRITER_AUTO_INDENT;
+        turtle_writer->flags |= TURTLE_WRITER_FLAG_AUTO_INDENT;
       else
-        turtle_writer->flags &= ~TURTLE_WRITER_AUTO_INDENT;        
+        turtle_writer->flags &= ~TURTLE_WRITER_FLAG_AUTO_INDENT;
       break;
 
     case RAPTOR_OPTION_WRITER_INDENT_WIDTH:
@@ -896,7 +938,7 @@ main(int argc, char *argv[])
 
   base_uri = raptor_new_uri(world, base_uri_string);
 
-  turtle_writer = raptor_new_turtle_writer(world, base_uri, 1, nstack, iostr);
+  turtle_writer = raptor_new_turtle_writer(world, base_uri, 1, nstack, iostr, 0);
   if(!turtle_writer) {
     fprintf(stderr, "%s: Failed to create turtle_writer to iostream\n", program);
     exit(1);

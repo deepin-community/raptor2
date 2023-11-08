@@ -9,8 +9,8 @@
 
 SET(RAPTOR_VERSION_MAJOR	2)
 SET(RAPTOR_VERSION_MINOR	0)
-SET(RAPTOR_VERSION_RELEASE	14)
-SET(RAPTOR_MIN_VERSION_DECIMAL	20014)
+SET(RAPTOR_VERSION_RELEASE	16)
+SET(RAPTOR_MIN_VERSION_DECIMAL	20016)
 
 SET(VERSION "${RAPTOR_VERSION_MAJOR}.${RAPTOR_VERSION_MINOR}.${RAPTOR_VERSION_RELEASE}")
 MATH(EXPR RAPTOR_VERSION_DECIMAL "${RAPTOR_VERSION_MAJOR} * 10000 + ${RAPTOR_VERSION_MINOR} * 100 + ${RAPTOR_VERSION_RELEASE}")
@@ -19,23 +19,37 @@ PROJECT(Raptor2 C)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)
 
+INCLUDE( GNUInstallDirs )
+
 SET(CMAKE_INCLUDE_CURRENT_DIR 1)
 
 ################################################################
 
-# Third-party libraries
+# Third-party libraries/dependencies
 
 FIND_PACKAGE(CURL)
 FIND_PACKAGE(LibXml2)
 FIND_PACKAGE(LibXslt)
 #FIND_PACKAGE(YAJL)
+FIND_PACKAGE(Perl REQUIRED)
+FIND_PACKAGE(BISON 3.4 REQUIRED)
+FIND_PACKAGE(FLEX 2.5.19 REQUIRED)
 
-INCLUDE_DIRECTORIES(
-	${CURL_INCLUDE_DIRS}
-	${EXPAT_INCLUDE_DIRS}
-	${LIBXML2_INCLUDE_DIR}
-	${LIBXSLT_INCLUDE_DIR}
-)
+if(EXISTS ${CURL_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
+endif(EXISTS ${CURL_INCLUDE_DIRS})
+
+if(EXISTS ${EXPAT_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${EXPAT_INCLUDE_DIRS})
+endif(EXISTS ${EXPAT_INCLUDE_DIRS})
+
+if(EXISTS ${LIBXML2_INCLUDE_DIR})
+  INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
+endif(EXISTS ${LIBXML2_INCLUDE_DIR})
+
+if(EXISTS ${LIBXSLT_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${LIBXSLT_INCLUDE_DIRS})
+endif(EXISTS ${LIBXSLT_INCLUDE_DIRS})
 
 ################################################################
 
@@ -58,6 +72,7 @@ CHECK_INCLUDE_FILE(stddef.h	HAVE_STDDEF_H)
 CHECK_INCLUDE_FILE(stdlib.h	HAVE_STDLIB_H)
 CHECK_INCLUDE_FILE(string.h	HAVE_STRING_H)
 CHECK_INCLUDE_FILE(unistd.h	HAVE_UNISTD_H)
+CHECK_INCLUDE_FILE(time.h	HAVE_TIME_H)
 CHECK_INCLUDE_FILE(sys/param.h	HAVE_SYS_PARAM_H)
 CHECK_INCLUDE_FILE(sys/stat.h	HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILE(sys/stat.h	HAVE_SYS_STAT_H)
@@ -88,6 +103,12 @@ CHECK_TYPE_SIZE("unsigned short"	SIZEOF_UNSIGNED_SHORT)
 CHECK_TYPE_SIZE("unsigned int"		SIZEOF_UNSIGNED_INT)
 CHECK_TYPE_SIZE("unsigned long"		SIZEOF_UNSIGNED_LONG)
 CHECK_TYPE_SIZE("unsigned long long"	SIZEOF_UNSIGNED_LONG_LONG)
+
+CHECK_C_SOURCE_COMPILES("
+int main(void){ printf(__FUNCTION__); }"
+	HAVE___FUNCTION__
+)
+
 
 IF(LIBXML2_FOUND)
 
@@ -149,7 +170,7 @@ ENDIF(LIBXML2_FOUND)
 # (Note: The CMake GUI displays these in alphabetical order, regardless of
 # the order we use here)
 
-SET(BUILD_SHARED_LIBS OFF CACHE BOOL
+SET(BUILD_SHARED_LIBS ON CACHE BOOL
 	"Build shared libraries instead of static ones.")
 
 IF(BUILD_SHARED_LIBS)
@@ -263,6 +284,40 @@ CONFIGURE_FILE(
 	@ONLY
 )
 
+################################################################
+
+message(STATUS "
+################################################################
+Raptor Configuration Summary
+################################################################
+
+    http://librdf.org/raptor/
+
+    Configured on host $ENV{COMPUTERNAME} ${HOSTNAME}
+      host OS                   ${CMAKE_SYSTEM_NAME}
+      host architecture         ${CMAKE_SYSTEM_PROCESSOR}
+
+    General flags:
+      CC                        ${CMAKE_C_COMPILER}
+      CXX (not used)            ${CMAKE_CXX_COMPILER}
+      CFLAGS                    ${CMAKE_C_FLAGS}
+      CXXFLAGS                  ${CMAKE_CXX_FLAGS}
+      LDFLAGS                   ${CMAKE_EXE_LINKER_FLAGS}
+
+    Installation prefix:        ${CMAKE_INSTALL_PREFIX}
+
+    Dependencies (packages marked with *** are required):
+    "
+)
+
+message( "  *** Perl                        ${PERL_EXECUTABLE}")
+message( "  *** Bison                       ${BISON_EXECUTABLE}")
+message( "  *** Flex                        ${FLEX_EXECUTABLE}")
+message( "  *** libxml2 (lib)               ${LIBXML2_LIBRARIES}")
+message( "  *** libxml2 (include)           ${LIBXML2_INCLUDE_DIR}")
+
+################################################################
+
 # On Windows, the test/utility programs usually have DLL dependencies that
 # make them cumbersome to invoke within IDE environments, so we enable the
 # test suite only when makefiles are being used.
@@ -312,8 +367,28 @@ CONFIGURE_FILE(
 	ADD_TEST("${NAME_PREFIX}:cmp" ${CMAKE_COMMAND} -E compare_files ${REFERENCE} ${OUTPUT})
 ENDMACRO(RAPPER_TEST NAME_PREFIX COMMAND OUTPUT REFERENCE)
 
-MACRO(RAPPER_RDFDIFF_TEST NAME RAPPER_COMMAND RAPPER_OUTPUT RDFDIFF_COMMAND)
-	FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test-${NAME}.cmake "
+INCLUDE(CMakeParseArguments)
+
+FUNCTION(RAPPER_RDFDIFF_TEST TEST_NAME RAPPER_COMMAND RAPPER_OUTPUT RDFDIFF_COMMAND)
+  # http://www.cmake.org/pipermail/cmake/2012-July/051309.html
+  SET(options EXPECTED_FAILURE)
+  SET(oneValueArgs )
+  SET(multiValueArgs )
+  CMAKE_PARSE_ARGUMENTS(RRT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  SET(TEST_NAME ${ARGV0})
+  SET(RAPPER_COMMAND ${ARGV1})
+  SET(RAPPER_OUTPUT ${ARGV2})
+  SET(RDFDIFF_COMMAND ${ARGV3})
+
+  # workaround because TRUE is not true in a CMake IF
+  IF(RRT_EXPECTED_FAILURE)
+    SET(EXPECT_FAILURE 1)
+  ELSE()
+    SET(EXPECT_FAILURE 0)
+  ENDIF()
+
+	FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test-${TEST_NAME}.cmake "
 SET(rdfdiff_status -1)
 
 EXECUTE_PROCESS(
@@ -334,13 +409,19 @@ IF(rapper_status EQUAL 0 OR rapper_status EQUAL 2)
 	)
 ENDIF(rapper_status EQUAL 0 OR rapper_status EQUAL 2)
 
-IF(NOT rdfdiff_status EQUAL 0)
-	MESSAGE(FATAL_ERROR "Test failed.")
-ENDIF(NOT rdfdiff_status EQUAL 0)
+IF(${EXPECT_FAILURE})
+  IF(rdfdiff_status EQUAL 0)
+    MESSAGE(FATAL_ERROR \"Test succeeded, but expected to fail.\")
+  ENDIF(rdfdiff_status EQUAL 0)
+ELSE()
+  IF(NOT rdfdiff_status EQUAL 0)
+    MESSAGE(FATAL_ERROR \"Test failed.\")
+  ENDIF(NOT rdfdiff_status EQUAL 0)
+ENDIF()
 ")
 
-	ADD_TEST(${NAME} ${CMAKE_COMMAND} -P test-${NAME}.cmake)
-ENDMACRO(RAPPER_RDFDIFF_TEST NAME RAPPER_COMMAND RAPPER_OUTPUT RDFDIFF_COMMAND)
+	ADD_TEST(${TEST_NAME} ${CMAKE_COMMAND} -P test-${TEST_NAME}.cmake)
+ENDFUNCTION(RAPPER_RDFDIFF_TEST)
 
 SUBDIRS(tests/feeds)
 SUBDIRS(tests/grddl)

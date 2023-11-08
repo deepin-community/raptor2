@@ -52,6 +52,8 @@
  * @xml_base: the in-scope XML base URI (or NULL)
  * 
  * Constructor - create a new XML element from a QName
+ *
+ * The @xml_language and @xml_base become owned by the new object.
  * 
  * Return value: a new #raptor_xml_element or NULL on failure
  **/
@@ -319,6 +321,12 @@ raptor_nsd_compare(const void *a, const void *b)
 {
   struct nsd* nsd_a = (struct nsd*)a;
   struct nsd* nsd_b = (struct nsd*)b;
+
+  /* Sort NULLs earlier */
+  if(!nsd_a->declaration)
+    return -1;
+  else if(!nsd_b->declaration)
+    return 1;
   return strcmp((const char*)nsd_a->declaration, (const char*)nsd_b->declaration);
 }
 
@@ -682,7 +690,7 @@ raptor_xml_escape_string_any(raptor_world *world,
     } else if(!quote && unichar == '>') {
       memcpy(q, "&gt;", 4);
       q+= 4;
-    } else if(quote && unichar == (unsigned long)quote) {
+    } else if(quote && unichar == RAPTOR_GOOD_CAST(unsigned long, quote)) {
       if(quote == '\'')  
         memcpy(q, "&apos;", 6);
       else
@@ -697,7 +705,7 @@ raptor_xml_escape_string_any(raptor_world *world,
       if(unichar == 0x09)
         *q++ = '9';
       else
-        *q++ = 'A'+ ((char)unichar-0x0a);
+        *q++ = RAPTOR_GOOD_CAST(unsigned char, 'A' + (RAPTOR_GOOD_CAST(char, unichar) - 0x0a));
       *q++= ';';
     } else if(unichar == 0x7f ||
                (unichar < 0x20 && unichar != 0x09 && unichar != 0x0a)) {

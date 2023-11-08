@@ -42,6 +42,8 @@
 #include "raptor_internal.h"
 
 #include <turtle_parser.h>
+#define YY_NO_UNISTD_H 1
+#define YYSTYPE TURTLE_PARSER_STYPE
 #include <turtle_lexer.h>
 #include <turtle_common.h>
 
@@ -64,6 +66,8 @@
  *
  * Turtle 2013 allows \ with -_~.!$&\'()*+,;=/?#@%
  *
+ * URIs may not have \t \b \n \r \f or raw ' ' or \u0020 or \u003C or \u003E
+ *
  * Return value: non-0 on failure
  **/
 int
@@ -71,33 +75,49 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
                                          const unsigned char *text,
                                          size_t len, int delim,
                                          raptor_simple_message_handler error_handler, 
-                                         void *error_data)
+                                         void *error_data,
+                                         int is_uri)
 {
   size_t i;
   const unsigned char *s;
   unsigned char *d;
   unsigned char *string = RAPTOR_MALLOC(unsigned char*, len + 1);
-  
+  const char* label = (is_uri ? "URI" : "string");
+
   if(!string)
     return -1;
 
   for(s = text, d = string, i = 0; i < len; s++, i++) {
     unsigned char c=*s;
 
+    if(c == ' ' &&  is_uri) {
+      error_handler(error_data,
+                    "Turtle %s error - character '%c'", label, c);
+      RAPTOR_FREE(char*, string);
+      return 1;
+    }
+
     if(c == '\\' ) {
       s++; i++;
       c = *s;
-      if(c == 'n')
-        *d++ = '\n';
-      else if(c == 'r')
-        *d++ = '\r';
-      else if(c == 't')
-        *d++ = '\t';
-      else if(c == 'b')
-        *d++ = '\b';
-      else if(c == 'f')
-        *d++ = '\f';
-      else if(c == '\\' || c == delim ||
+      if(c == 'n' || c == 'r' || c == 't' || c == 'b' || c == 'f') {
+        if(is_uri) {
+          error_handler(error_data,
+                        "Turtle %s error - illegal URI escape '\\%c'", label, c);
+          RAPTOR_FREE(char*, string);
+          return 1;
+        }
+        if(c == 'n')
+          *d++ = '\n';
+        else if(c == 'r')
+          *d++ = '\r';
+        else if(c == 't')
+          *d++ = '\t';
+        else if(c == 'b')
+          *d++ = '\b';
+        else /* 'f' */
+          *d++ = '\f';
+      } else if(c == '\\' || c == delim ||
               c == '-' || c == '_' || c == '~' || c == '.' || c == '!' ||
               c == '$' || c == '&' || c == '\'' || c == '(' || c == ')' ||
               c == '*' || c == '+' || c == ',' || c == ';' ||c == '=' ||
@@ -113,7 +133,7 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
         s++; i++;
         if(i+ulen > len) {
           error_handler(error_data,
-                        "Turtle string error - \\%c over end of line", c);
+                        "Turtle %s error - \\%c over end of line", label, c);
           RAPTOR_FREE(char*, string);
           return 1;
         }
@@ -122,8 +142,8 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
           char cc = s[ii];
           if(!isxdigit(RAPTOR_GOOD_CAST(char, cc))) {
             error_handler(error_data,
-                          "Turtle string error - illegal hex digit %c in Unicode escape '%c%s...'",
-                          cc, c, s);
+                          "Turtle %s error - illegal hex digit %c in Unicode escape '%c%s...'",
+                          label, cc, c, s);
             RAPTOR_FREE(char*, string);
             return 1;
           }
@@ -132,8 +152,8 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
         n = sscanf((const char*)s, ((ulen == 4) ? "%04lx" : "%08lx"), &unichar);
         if(n != 1) {
           error_handler(error_data,
-                        "Turtle string error - illegal Unicode escape '%c%s...'",
-                        c, s);
+                        "Turtle %s error - illegal Unicode escape '%c%s...'",
+                        label, c, s);
           RAPTOR_FREE(char*, string);
           return 1;
         }
@@ -141,10 +161,16 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
         s+= ulen-1;
         i+= ulen-1;
         
+        if(is_uri && (unichar == 0x0020 || unichar == 0x003C || unichar == 0x003E)) {
+          error_handler(error_data,
+                        "Turtle %s error - illegal Unicode escape \\u%04lX in URI.", label, unichar);
+          break;
+        }
+
         if(unichar > raptor_unicode_max_codepoint) {
           error_handler(error_data,
-                        "Turtle string error - illegal Unicode character with code point #x%lX (max #x%lX).", 
-                        unichar, raptor_unicode_max_codepoint);
+                        "Turtle %s error - illegal Unicode character with code point #x%lX (max #x%lX).", 
+                        label, unichar, raptor_unicode_max_codepoint);
           RAPTOR_FREE(char*, string);
           return 1;
         }
@@ -153,8 +179,8 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
                                                             len-(d-string));
         if(unichar_width < 0) {
           error_handler(error_data,
-                        "Turtle string error - illegal Unicode character with code point #x%lX.", 
-                        unichar);
+                        "Turtle %s error - illegal Unicode character with code point #x%lX.", 
+                        label, unichar);
           RAPTOR_FREE(char*, string);
           return 1;
         }
@@ -163,8 +189,8 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
       } else {
         /* don't handle \x where x isn't one of: \t \n \r \\ (delim) */
         error_handler(error_data,
-                      "Turtle string error - illegal escape \\%c (#x%02X) in \"%s\"", 
-                      c, c, text);
+                      "Turtle %s error - illegal escape \\%c (#x%02X) in \"%s\"", 
+                      label, c, c, text);
       }
     } else
       *d++=c;
@@ -174,6 +200,10 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
   /* calculate output string size */
   len = d-string;
   
+#ifdef __clang_analyzer__
+  /* clang --analyze does not know about ownership of next call */
+  free(string); string = NULL;
+#endif
   /* string gets owned by the stringbuffer after this */
   return raptor_stringbuffer_append_counted_string(stringbuffer, 
                                                    string, len, 0);
@@ -182,13 +212,13 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
 
 
 /**
- * raptor_turtle_expand_name_escapes:
- * @name: turtle name to decode
+ * raptor_turtle_expand_qname_escapes:
+ * @name: turtle qname string to decode
  * @len: length of name
  * @error_handler: error handling function
  * @error_data: error handler data
  *
- * Expands Turtle escapes for the given name
+ * Expands Turtle escapes for the given turtle qname string
  *
  * The passed in string is handled according to the Turtle string
  * escape rules giving a UTF-8 encoded output of the Unicode codepoints.
@@ -201,17 +231,17 @@ raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer,
  * Return value: new length or 0 on failure
  **/
 size_t
-raptor_turtle_expand_name_escapes(unsigned char *name,
-                                  size_t len,
-                                  raptor_simple_message_handler error_handler, 
-                                  void *error_data)
+raptor_turtle_expand_qname_escapes(unsigned char *name,
+                                   size_t len,
+                                   raptor_simple_message_handler error_handler, 
+                                   void *error_data)
 {
   size_t i;
   const unsigned char *s;
   unsigned char *d;
   
   if(!name)
-    return -1;
+    return 0;
 
   for(s = name, d = name, i = 0; i < len; s++, i++) {
     unsigned char c=*s;
@@ -245,26 +275,26 @@ raptor_turtle_expand_name_escapes(unsigned char *name,
         s++; i++;
         if(i+ulen > len) {
           error_handler(error_data,
-                        "Turtle string error - \\%c over end of line", c);
-          return 1;
+                        "Turtle name error - \\%c over end of line", c);
+          return 0;
         }
         
         for(ii = 0; ii < ulen; ii++) {
           char cc = s[ii];
           if(!isxdigit(RAPTOR_GOOD_CAST(char, cc))) {
             error_handler(error_data,
-                          "Turtle string error - illegal hex digit %c in Unicode escape '%c%s...'",
+                          "Turtle name error - illegal hex digit %c in Unicode escape '%c%s...'",
                           cc, c, s);
-            return 1;
+            return 0;
           }
         }
 
         n = sscanf((const char*)s, ((ulen == 4) ? "%04lx" : "%08lx"), &unichar);
         if(n != 1) {
           error_handler(error_data,
-                        "Turtle string error - illegal Uncode escape '%c%s...'",
+                        "Turtle name error - illegal Uncode escape '%c%s...'",
                         c, s);
-          return 1;
+          return 0;
         }
 
         s+= ulen-1;
@@ -272,25 +302,25 @@ raptor_turtle_expand_name_escapes(unsigned char *name,
         
         if(unichar > raptor_unicode_max_codepoint) {
           error_handler(error_data,
-                        "Turtle string error - illegal Unicode character with code point #x%lX (max #x%lX).", 
+                        "Turtle name error - illegal Unicode character with code point #x%lX (max #x%lX).", 
                         unichar, raptor_unicode_max_codepoint);
-          return 1;
+          return 0;
         }
           
         unichar_width = raptor_unicode_utf8_string_put_char(unichar, d, 
                                                             len - (d-name));
         if(unichar_width < 0) {
           error_handler(error_data,
-                        "Turtle string error - illegal Unicode character with code point #x%lX.", 
+                        "Turtle name error - illegal Unicode character with code point #x%lX.", 
                         unichar);
-          return 1;
+          return 0;
         }
         d += (size_t)unichar_width;
 
       } else {
         /* don't handle \x where x isn't one of: \t \n \r \\ (delim) */
         error_handler(error_data,
-                      "Turtle string error - illegal escape \\%c (#x%02X) in \"%s\"", 
+                      "Turtle name error - illegal escape \\%c (#x%02X) in \"%s\"", 
                       c, c, name);
       }
     } else
@@ -304,22 +334,3 @@ raptor_turtle_expand_name_escapes(unsigned char *name,
   /* string gets owned by the stringbuffer after this */
   return len;
 }
-
-
-int
-raptor_turtle_check_uri_string(unsigned char *string)
-{
-  unsigned char c;
-
-  if(!string)
-    return 0;
-  
-  while((c = *string++)) {
-    if(((c <= 0x20) ||
-        c == '<' || c == '>' || c == '"' || c == '{' || c == '}' || 
-        c == '|' || c == '^' || c == '`' || c == '\\'))
-      return 0;
-  }
-  return 1;
-}
-

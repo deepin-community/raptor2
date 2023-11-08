@@ -27,8 +27,18 @@
 #include <raptor_config.h>
 #endif
 
+#if defined(STANDALONE) && defined(HAVE_UNISTD_H) && defined(HAVE_SYS_STAT_H)
+/* for lstat() used in main() test which is in POSIX */
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+#endif
+
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
 #include <ctype.h>
 #include <stdarg.h>
 #ifdef HAVE_ERRNO_H
@@ -105,11 +115,6 @@ raptor_new_uri_from_counted_string(raptor_world* world,
 
   raptor_world_open(world);
 
-#ifdef DEBUG
-  RAPTOR_ASSERT(strlen((const char*)uri_string) != length,
-                "URI string is not declared length");
-#endif
-
   if(world->uris_tree) {
     raptor_uri key; /* on stack - not allocated */
 
@@ -137,7 +142,9 @@ raptor_new_uri_from_counted_string(raptor_world* world,
   /* otherwise create a new one */
 
 #if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
-  RAPTOR_DEBUG2("Creating new URI %s in hash\n", uri_string);
+  RAPTOR_DEBUG1("Creating new URI '");
+  fwrite(uri_string, sizeof(char), length, RAPTOR_DEBUG_FH);
+  fputs("' in hash\n", RAPTOR_DEBUG_FH);
 #endif
 
   new_uri = RAPTOR_CALLOC(raptor_uri*, 1, sizeof(*new_uri));
@@ -658,7 +665,8 @@ raptor_uri_counted_filename_to_uri_string(const char *filename,
   /* "file://" */
 #define RAPTOR_LEN_FILE_CSS 7 
   size_t len = RAPTOR_LEN_FILE_CSS;
-  
+  size_t fl;
+
   if(!filename)
     return NULL;
 
@@ -733,13 +741,15 @@ raptor_uri_counted_filename_to_uri_string(const char *filename,
     }
 
     path[path_len] = '/';
-    memcpy(path + path_len + 1, filename, filename_len + 1);
+    memcpy(path + path_len + 1, filename, filename_len);
+    path[new_filename_len] = '\0';
+    filename_len = new_filename_len;
     filename = (const char*)path;
   }
 #endif
 
   /* add URI-escaped filename length */
-  for(from = filename; *from ; from++) {
+  for(from = filename, fl = filename_len; fl ; from++, fl--) {
     len++;
 #ifdef WIN32
     if(*from == ':') {
@@ -755,17 +765,18 @@ raptor_uri_counted_filename_to_uri_string(const char *filename,
   if(!buffer)
     goto path_done;
 
-  memcpy(buffer, "file://", 7);
+  memcpy(buffer, "file://", RAPTOR_LEN_FILE_CSS + 1); /* copy NUL */
   from = filename;
-  to = (char*)(buffer+7);
+  to = (char*)(buffer + RAPTOR_LEN_FILE_CSS);
+  fl = filename_len;
 #ifdef WIN32
-  if(*from == '\\' && from[1] == '\\')
-    from += 2;
-  else
+  if(*from == '\\' && from[1] == '\\') {
+    from += 2; fl -= 2;
+  } else
     *to++ ='/';
 #endif
-  while(*from) {
-    char c=*from++;
+  for(; fl; fl--) {
+    char c = *from++;
 #ifdef WIN32
     if(c == '\\')
       *to++ ='/';
@@ -784,7 +795,7 @@ raptor_uri_counted_filename_to_uri_string(const char *filename,
     } else
       *to++ = c;
   }
-  *to='\0';
+  *to = '\0';
 
   path_done:
 #ifndef WIN32
@@ -1385,9 +1396,10 @@ raptor_uri_to_relative_counted_uri_string(raptor_uri *base_uri,
      !strncmp((const char*)base_detail->scheme, 
               (const char*)reference_detail->scheme,
               base_detail->scheme_len) &&
-     !strncmp((const char*)base_detail->authority, 
+     (base_detail->authority_len == 0 ||
+        !strncmp((const char*)base_detail->authority,
               (const char*)reference_detail->authority,
-              base_detail->authority_len)) {
+              base_detail->authority_len))) {
     
     if(!base_detail->path) {
       if(reference_detail->path) {
@@ -1918,7 +1930,8 @@ main(int argc, char *argv[])
 #ifndef WIN32
 #if defined(HAVE_UNISTD_H) && defined(HAVE_SYS_STAT_H)
   const char* dirs[6] = { "/etc", "/bin", "/tmp", "/lib", "/var", NULL };
-  unsigned char uri_buffer[16]; /* strlen("file:///DIR/foo")+1 */  
+  #define URI_BUFFER_LEN 16
+  unsigned char uri_buffer[URI_BUFFER_LEN]; /* strlen("file:///DIR/foo")+1 */  
   int i;
   const char *dir;
 #endif
@@ -1991,7 +2004,7 @@ main(int argc, char *argv[])
             "%s: WARNING: Found no convenient directory - not testing relative files\n",
             program);
   else {
-    sprintf((char*)uri_buffer, "file://%s/foo", dir);
+    snprintf((char*)uri_buffer, URI_BUFFER_LEN, "file://%s/foo", dir);
 #if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
     fprintf(stderr,
             "%s: Checking relative file name 'foo' in dir %s expecting URI %s\n",

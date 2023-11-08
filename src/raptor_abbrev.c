@@ -224,9 +224,10 @@ raptor_compare_abbrev_po(raptor_abbrev_node** nodes1,
 
 
 #ifdef RAPTOR_DEBUG
-static void
-raptor_print_abbrev_po(raptor_abbrev_node** nodes, FILE* handle)
+static int
+raptor_print_abbrev_po(void** object, FILE* handle)
 {
+  raptor_abbrev_node** nodes = (raptor_abbrev_node**)object;
   raptor_abbrev_node* p = nodes[0];
   raptor_abbrev_node* o = nodes[1];
   
@@ -237,6 +238,7 @@ raptor_print_abbrev_po(raptor_abbrev_node** nodes, FILE* handle)
     raptor_term_print_as_ntriples(o->term, handle);
     fputs("]\n", handle);
   }
+  return 0;
 }
 #endif
 
@@ -567,8 +569,9 @@ raptor_new_qname_from_resource(raptor_sequence* namespaces,
   if(node->term->type != RAPTOR_TERM_TYPE_URI) {
 #ifdef RAPTOR_DEBUG
     RAPTOR_FATAL1("Node must be a URI\n");
-#endif
+#else
     return NULL;
+#endif
   }
 
   qname = raptor_new_qname_from_namespace_uri(nstack, node->term->value.uri, 10);

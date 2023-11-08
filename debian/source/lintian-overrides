@@ -1,0 +1,8 @@
+# In source tarball
+raptor2 source: source-is-missing [NEWS.html]
+
+# Generated from *.xml files in docs/ path
+raptor2 source: source-is-missing [docs/html/raptor2-changes-1-4-21-to-2-0-0.html]
+raptor2 source: source-is-missing [docs/html/raptor2-section-world.html]
+
+raptor2 source: very-long-line-length-in-source-file

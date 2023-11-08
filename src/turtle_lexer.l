@@ -109,6 +109,7 @@
 #include <turtle_parser.h>
 #include <turtle_common.h>
 
+#define YYSTYPE TURTLE_PARSER_STYPE
 
 /* Prototypes */ 
 static unsigned char *turtle_copy_token(unsigned char *text, size_t len);
@@ -135,6 +136,8 @@ int turtle_lexer_get_column(yyscan_t yyscanner);
 #endif
 
 static void turtle_lexer_cleanup(yyscan_t yyscanner);
+#undef yycleanup
+#define yycleanup turtle_lexer_cleanup
 
 #ifdef HAVE_SETJMP
 static jmp_buf turtle_lexer_fatal_error_longjmp_env;
@@ -143,7 +146,6 @@ static jmp_buf turtle_lexer_fatal_error_longjmp_env;
 #define YY_FATAL_ERROR(msg) do {                                  \
     turtle_lexer_error(yyscanner, RAPTOR_LOG_LEVEL_FATAL, msg);   \
     longjmp(turtle_lexer_fatal_error_longjmp_env, 1);             \
-    abort();                                                      \
 } while(0)
 #else
 #define YY_FATAL_ERROR(msg) do {                                   \
@@ -170,6 +172,9 @@ static char turtle_lexer_oom_text[]="turtle_lexer: Out of memory";
 
 /* Do not need input() to to read from stdin */
 #define YY_NO_INPUT 1
+
+#define YY_USER_ACTION				\
+  turtle_parser->consumed += yyleng;
 
 %}
 
@@ -290,7 +295,7 @@ EXPONENT [eE][+-]?[0-9]+
                       turtle_parser->lineno++;
                   }
 
-                  if(raptor_stringbuffer_append_turtle_string(turtle_parser->sb, (unsigned char*)yytext, yyleng, '"', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser)) { /* " */
+                  if(raptor_stringbuffer_append_turtle_string(turtle_parser->sb, (unsigned char*)yytext, yyleng, '"', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser, 0)) { /* " */
                     BEGIN(INITIAL);
                     raptor_free_stringbuffer(turtle_parser->sb);
                     turtle_parser->sb = NULL;
@@ -312,6 +317,11 @@ EXPONENT [eE][+-]?[0-9]+
                     BEGIN(INITIAL);
                     raptor_free_stringbuffer(turtle_parser->sb);
                     turtle_parser->sb = NULL;
+                    if(!turtle_parser->is_end) {
+                      /* next run will fix things, hopefully */
+                      return EOF;
+                    }
+                    /* otherwise abort */
                     turtle_syntax_error(rdf_parser, "End of file in middle of \"\"\"literal\"\"\"");
                     yyterminate();
 }
@@ -353,7 +363,7 @@ EXPONENT [eE][+-]?[0-9]+
                       turtle_parser->lineno++;
                   }
 
-                  if(raptor_stringbuffer_append_turtle_string(turtle_parser->sb, (unsigned char*)yytext, yyleng, '"', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser)) { /* " */
+                  if(raptor_stringbuffer_append_turtle_string(turtle_parser->sb, (unsigned char*)yytext, yyleng, '"', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser, 0)) { /* " */
                     BEGIN(INITIAL);
                     raptor_free_stringbuffer(turtle_parser->sb);
                     turtle_parser->sb = NULL;
@@ -375,6 +385,11 @@ EXPONENT [eE][+-]?[0-9]+
                     BEGIN(INITIAL);
                     raptor_free_stringbuffer(turtle_parser->sb);
                     turtle_parser->sb = NULL;
+                    if(!turtle_parser->is_end) {
+                      /* next run will fix things, hopefully */
+                      return EOF;
+                    }
+                    /* otherwise abort */
                     turtle_syntax_error(rdf_parser, "End of file in middle of '''literal'''");
                     yyterminate();
 }
@@ -429,7 +444,7 @@ EXPONENT [eE][+-]?[0-9]+
                   yyterminate();  }
 
 
-{IRI}[\ \t\v\n]*("=")?[\ \t\v\n]*"{"   {
+{IRI}[\ \t\v\r\n]*("=")?[\ \t\v\r\n]*"{"   {
                   raptor_stringbuffer* sb;
                   unsigned char* uri_string;
 
@@ -444,17 +459,13 @@ EXPONENT [eE][+-]?[0-9]+
                   /* start at yytext + 1 to skip '<' and operate over
                    * length-2 bytes to skip '<' and '>'
                    */
-                  if(raptor_stringbuffer_append_turtle_string(sb, (unsigned char*)yytext+1, yyleng-2, '>', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser)) {
+                  if(raptor_stringbuffer_append_turtle_string(sb, (unsigned char*)yytext+1, yyleng-2, '>', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser, 1)) {
                     raptor_free_stringbuffer(sb);
                     YY_FATAL_ERROR_EOF("raptor_stringbuffer_append_turtle_string failed");
                   }
                   uri_string = raptor_stringbuffer_as_string(sb);
 
-                  if(!raptor_turtle_check_uri_string(uri_string)) {
-                    turtle_syntax_error(rdf_parser, "URI '%s' contains bad character(s)", uri_string);
-                    raptor_free_stringbuffer(sb);
-                    yyterminate();
-                  } else if(!*uri_string)
+                  if(!*uri_string)
                     yylval->uri = raptor_uri_copy(rdf_parser->base_uri);
                   else
                     yylval->uri = raptor_new_uri_relative_to_base(rdf_parser->world, rdf_parser->base_uri, uri_string);
@@ -465,7 +476,7 @@ EXPONENT [eE][+-]?[0-9]+
                     TURTLE_LEXER_OOM();
                 return GRAPH_NAME_LEFT_CURLY; }
 
-{QNAME}[\ \t\v\n]*("=")?[\ \t\v\n]*"{"   {
+{QNAME}[\ \t\v\r\n]*("=")?[\ \t\v\r\n]*"{"   {
                while(1) {
                   int c = yytext[yyleng - 1];
                   if(c == '{' || c == ' ' || c=='\t' || c == '\v' || c == '\n' ||
@@ -494,21 +505,15 @@ EXPONENT [eE][+-]?[0-9]+
                   sb = raptor_new_stringbuffer();
                   if(!sb)
                     TURTLE_LEXER_OOM();
-                  if(raptor_stringbuffer_append_turtle_string(sb, (unsigned char*)yytext+1, yyleng-1, '>', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser)) {
+                  if(raptor_stringbuffer_append_turtle_string(sb, (unsigned char*)yytext+1, yyleng-1, '>', (raptor_simple_message_handler)turtle_lexer_syntax_error, rdf_parser, 1)) {
                     raptor_free_stringbuffer(sb);
                     YY_FATAL_ERROR_EOF("raptor_stringbuffer_append_turtle_string failed");
                   }
                   uri_string = raptor_stringbuffer_as_string(sb);
-                  if(!raptor_turtle_check_uri_string(uri_string)) {
-                    turtle_syntax_error(rdf_parser, "URI '%s' contains bad character(s)", uri_string);
+                  yylval->uri = raptor_new_uri_relative_to_base(rdf_parser->world, rdf_parser->base_uri, uri_string);
+                  if(!yylval->uri) {
                     raptor_free_stringbuffer(sb);
-                    yyterminate();
-                  } else {
-                    yylval->uri = raptor_new_uri_relative_to_base(rdf_parser->world, rdf_parser->base_uri, uri_string);
-                    if(!yylval->uri) {
-                      raptor_free_stringbuffer(sb);
-                      TURTLE_LEXER_OOM();
-                    }
+                    TURTLE_LEXER_OOM();
                   }
                   raptor_free_stringbuffer(sb);
                 }
@@ -570,8 +575,8 @@ turtle_copy_string_token(raptor_parser* rdf_parser,
       return NULL;
     
     rc = raptor_stringbuffer_append_turtle_string(sb, string, len, delim,
-                                                (raptor_simple_message_handler)turtle_lexer_syntax_error,
-                                                rdf_parser);
+                                                  (raptor_simple_message_handler)turtle_lexer_syntax_error,
+                                                  rdf_parser, 0);
     if(rc) {
       raptor_free_stringbuffer(sb);
       return NULL;
@@ -886,7 +891,8 @@ void turtle_lexer_free(void *ptr, yyscan_t yyscanner)
 const char *
 turtle_token_print(raptor_world* world, int token, YYSTYPE *lval)
 {
-  static char buffer[2048];
+  #define TTP_DEBUG_BUFFER_SIZE 2048
+  static char buffer[TTP_DEBUG_BUFFER_SIZE];
 
   if(!token)
     return "<<EOF>>";
@@ -920,47 +926,61 @@ turtle_token_print(raptor_world* world, int token, YYSTYPE *lval)
       return "HAT";
 
     case STRING_LITERAL:
-      sprintf(buffer, "STRING_LITERAL(%s)", lval->string);
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "STRING_LITERAL(%s)",
+               lval->string);
       return buffer;
 
     case URI_LITERAL:
-      sprintf(buffer, "URI_LITERAL(%s)", 
-              (lval->uri ? (char*)raptor_uri_as_string(lval->uri) : ""));
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "URI_LITERAL(%s)", 
+               (lval->uri ? (char*)raptor_uri_as_string(lval->uri) : ""));
       return buffer;
 
     case BLANK_LITERAL:
-      sprintf(buffer, "BLANK_LITERAL(%s)", lval->string);
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "BLANK_LITERAL(%s)",
+               lval->string);
       return buffer;
 
     case QNAME_LITERAL:
-      sprintf(buffer, "QNAME_LITERAL(%s)", 
-              (lval->uri ? (char*)raptor_uri_as_string(lval->uri) : ""));
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "QNAME_LITERAL(%s)", 
+               (lval->uri ? (char*)raptor_uri_as_string(lval->uri) : ""));
       return buffer;
 
     case INTEGER_LITERAL:
-      sprintf(buffer, "INTEGER_LITERAL(%s)", lval->string);
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "INTEGER_LITERAL(%s)",
+               lval->string);
       return buffer;
 
     case FLOATING_LITERAL:
-      sprintf(buffer, "FLOATING_LITERAL(%s)", lval->string);
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "FLOATING_LITERAL(%s)",
+               lval->string);
       return buffer;
 
     case IDENTIFIER:
-      sprintf(buffer, "IDENTIFIER(%s)", 
-              (lval->string ? (char*)lval->string : ""));
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "IDENTIFIER(%s)", 
+               (lval->string ? (char*)lval->string : ""));
       return buffer;
 
     case LANGTAG:
-      sprintf(buffer, "LANGTAG(%s)", 
-              (lval->string ? (char*)lval->string : ""));
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "LANGTAG(%s)", 
+               (lval->string ? (char*)lval->string : ""));
       return buffer;
 
     case DECIMAL_LITERAL:
-      sprintf(buffer, "DECIMAL_LITERAL(%s)", lval->string);
+      snprintf(buffer, TTP_DEBUG_BUFFER_SIZE, "DECIMAL_LITERAL(%s)",
+               lval->string);
       return buffer;
 
     case ERROR_TOKEN:
       return "ERROR";
+
+    case LEFT_CURLY:
+      return "{";
+    
+    case RIGHT_CURLY:
+      return "}";
+
+    case GRAPH_NAME_LEFT_CURLY:
+      return "GRAPH_NAME {";
 
    default:
      RAPTOR_DEBUG2("UNKNOWN token %d - add a new case\n", token);
@@ -998,18 +1018,23 @@ turtle_token_free(raptor_world* world, int token, YYSTYPE *lval)
 
 #ifdef STANDALONE
 
+#define FILE_READ_BUF_SIZE 4096
+
 int
 main(int argc, char *argv[]) 
 {
+  char *turtle_string = NULL;
   raptor_parser rdf_parser;
   raptor_turtle_parser turtle_parser;
   yyscan_t scanner;
   int token = EOF;
-  FILE *fh;
   YYSTYPE lval;
   const unsigned char *uri_string;
   const char *filename = NULL;
+  char *buf = NULL;
+  size_t len;
   raptor_world* world;
+  FILE *fh;
   
   world = raptor_new_world();
   
@@ -1026,6 +1051,10 @@ main(int argc, char *argv[])
     fh = (FILE*)stdin;
   }
 
+  turtle_string = RAPTOR_CALLOC(char*, FILE_READ_BUF_SIZE, 1);
+  fread(turtle_string, FILE_READ_BUF_SIZE, 1, fh);
+  fclose(fh);
+
   memset(&rdf_parser, 0, sizeof(rdf_parser));
   memset(&turtle_parser, 0, sizeof(turtle_parser));
 
@@ -1038,7 +1067,14 @@ main(int argc, char *argv[])
 
   yylex_init(&turtle_parser.scanner);
   scanner = turtle_parser.scanner;
-  turtle_lexer_set_in(fh, scanner);
+
+  len =  strlen(RAPTOR_GOOD_CAST(const char*, turtle_string));
+  buf =  RAPTOR_MALLOC(char*, len + 3);
+  memcpy(buf, turtle_string, len);
+  buf[len] =  ' ';
+  buf[len + 1] =  buf[len + 2] = '\0'; /* YY_END_OF_BUFFER_CHAR; */
+  (void)turtle_lexer__scan_buffer(buf, len + 3, scanner);
+
   turtle_lexer_set_extra(&rdf_parser, scanner);
 
   /* Initialise enough of the parser and locator to get error messages */
@@ -1066,11 +1102,16 @@ main(int argc, char *argv[])
       break;
   }
 
+  if(buf)
+    RAPTOR_FREE(char*, buf);
+  
   yylex_destroy(scanner);
 
   raptor_namespaces_clear(&turtle_parser.namespaces);
   
   raptor_free_uri(rdf_parser.base_uri);
+
+  RAPTOR_FREE(char*, turtle_string);
 
   raptor_free_world(world);
 

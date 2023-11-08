@@ -12,7 +12,9 @@
 #endif
 
 #ifdef HAVE_VASPRINTF
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* to get vasprintf() available */
+#endif
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -86,7 +88,7 @@ vsnprintf_is_c99(void)
 
 #define VSNPRINTF_NOT_C99_BLOCK(len, buffer, size, format, arguments)   \
   do {                                                                  \
-    if(!buffer || !size) {                                              \
+    if((buffer == NULL) || !size) {                                     \
       /* This vsnprintf doesn't return number of bytes required */      \
       size = 2 + strlen(format);                                        \
       while(1) {                                                        \
@@ -123,7 +125,7 @@ vsnprintf_is_c99(void)
       }                                                                 \
     }                                                                   \
                                                                         \
-    if(buffer)                                                          \
+    if(buffer != NULL)                                                  \
       len = vsnprintf(buffer, size, format, arguments);                 \
   } while(0)
 
@@ -303,6 +305,8 @@ static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  * If @buffer is NULL or the @bufsize is too small, the number of
  * bytes needed (excluding NUL) is returned and no formatting is done.
  *
+ * NOTE: Does NOT add a '\0' at end of string.
+ *
  * Return value: number of bytes needed or written (excluding NUL) or 0 on failure
  */
 size_t
@@ -431,8 +435,10 @@ main(int argc, char *argv[])
       /* len_ref = sprintf(buf_ref, fmt, arg);
          assert((size_t)len_ref == x + y - 2); */
 
+      PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START
       if(test_snprintf(len_ref, fmt, arg))
         errors++;
+      PRAGMA_IGNORE_WARNING_END
     }
   }
 

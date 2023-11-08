@@ -48,9 +48,9 @@
 
 /* statics */
 
-const char * const raptor_short_copyright_string = "Copyright 2000-2014 David Beckett. Copyright 2000-2005 University of Bristol";
+const char * const raptor_short_copyright_string = "Copyright 2000-2023 David Beckett. Copyright 2000-2005 University of Bristol";
 
-const char * const raptor_copyright_string = "Copyright (C) 2000-2014 David Beckett - http://www.dajobe.org/\nCopyright (C) 2000-2005 University of Bristol - http://www.bristol.ac.uk/";
+const char * const raptor_copyright_string = "Copyright (C) 2000-2023 David Beckett - http://www.dajobe.org/\nCopyright (C) 2000-2005 University of Bristol - http://www.bristol.ac.uk/";
 
 const char * const raptor_license_string = "LGPL 2.1 or newer, GPL 2 or newer, Apache 2.0 or newer.\nSee http://librdf.org/raptor/LICENSE.html for full terms.";
 
@@ -127,7 +127,7 @@ raptor_new_world_internal(unsigned int version_decimal)
   if(version_decimal < RAPTOR_MIN_VERSION_DECIMAL) {
     fprintf(stderr,
             "raptor_new_world() called via header from version %u but minimum supported version is %u\n",
-            version_decimal, RAPTOR_MIN_VERSION_DECIMAL);
+            version_decimal, RAPTOR_GOOD_CAST(unsigned int, RAPTOR_MIN_VERSION_DECIMAL));
     return NULL;
   }
   
@@ -319,7 +319,7 @@ raptor_world_default_generate_bnodeid_handler(void *user_data,
 
 /**
  * raptor_world_generate_bnodeid:
- * @world: #raptor_parser parser object
+ * @world: raptor_world object
  * 
  * Generate an new blank node ID
  *
@@ -750,7 +750,7 @@ raptor_check_world_internal(raptor_world* world, const char* name)
 
   if(!world) {
     fprintf(stderr, "%s called with NULL world object\n", name);
-    RAPTOR_ASSERT_DIE
+    RAPTOR_ASSERT_DIE(return 1)
   }
   
   /* In Raptor V1 ABI the first int of raptor_world is the 'opened' field */

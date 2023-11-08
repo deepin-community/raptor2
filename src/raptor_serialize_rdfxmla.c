@@ -451,7 +451,7 @@ raptor_rdfxmla_emit_subject_list_items(raptor_serializer* serializer,
       case RAPTOR_TERM_TYPE_UNKNOWN:
       default:
         raptor_log_error_formatted(serializer->world, RAPTOR_LOG_LEVEL_ERROR,
-                                   NULL, "Triple has unsupported term type %d", 
+                                   NULL, "Triple has unsupported term type %u",
                                    object->term->type);
         break;
 
@@ -482,7 +482,6 @@ raptor_rdfxmla_emit_subject_properties(raptor_serializer* serializer,
 {
   raptor_rdfxmla_context* context = (raptor_rdfxmla_context*)serializer->context;
   int rv = 0;
-  int i;
   raptor_avltree_iterator* iter = NULL;
   raptor_term* subject_term = subject->node->term;
 
@@ -529,9 +528,9 @@ raptor_rdfxmla_emit_subject_properties(raptor_serializer* serializer,
   }
 
 
-  for(i = 0, iter = raptor_new_avltree_iterator(subject->properties, NULL, NULL, 1);
+  for(iter = raptor_new_avltree_iterator(subject->properties, NULL, NULL, 1);
       iter && !rv;
-      i++, (rv = raptor_avltree_iterator_next(iter))) {
+      (rv = raptor_avltree_iterator_next(iter))) {
     raptor_uri *base_uri = NULL;
     raptor_qname *qname;
     raptor_xml_element *element;
@@ -586,14 +585,14 @@ raptor_rdfxmla_emit_subject_properties(raptor_serializer* serializer,
       case RAPTOR_TERM_TYPE_UNKNOWN:
       default:
         raptor_log_error_formatted(serializer->world, RAPTOR_LOG_LEVEL_ERROR,
-                                   NULL, "Triple has unsupported term type %d", 
+                                   NULL, "Triple has unsupported term type %u",
                                    object->term->type);
         break;
     }    
 
     /* Return error if emitting something failed above */
     if(rv)
-      return rv;
+      break;
 
     raptor_free_xml_element(element);
     
@@ -1300,7 +1299,7 @@ raptor_rdfxmla_serialize_statement(raptor_serializer* serializer,
   if(!(statement->subject->type == RAPTOR_TERM_TYPE_URI ||
        statement->subject->type == RAPTOR_TERM_TYPE_BLANK)) {
     raptor_log_error_formatted(serializer->world, RAPTOR_LOG_LEVEL_ERROR, NULL,
-                               "Cannot serialize a triple with subject node type %d",
+                               "Cannot serialize a triple with subject node type %u",
                                statement->subject->type);
     return 1;
   }  
@@ -1317,7 +1316,7 @@ raptor_rdfxmla_serialize_statement(raptor_serializer* serializer,
        object_type == RAPTOR_TERM_TYPE_BLANK ||
        object_type == RAPTOR_TERM_TYPE_LITERAL)) {
     raptor_log_error_formatted(serializer->world, RAPTOR_LOG_LEVEL_ERROR, NULL,
-                               "Cannot serialize a triple with object node type %d",
+                               "Cannot serialize a triple with object node type %u",
                                object_type);
     return 1;
   }
@@ -1353,10 +1352,9 @@ raptor_rdfxmla_serialize_statement(raptor_serializer* serializer,
 
       if(context->is_xmp && predicate->ref_count > 1) {
         raptor_avltree_iterator* iter = NULL;
-        int i;
-        for(i = 0, (iter = raptor_new_avltree_iterator(subject->properties, NULL, NULL, 1));
+        for((iter = raptor_new_avltree_iterator(subject->properties, NULL, NULL, 1));
             iter && !rv;
-            i++, (rv = raptor_avltree_iterator_next(iter))) {
+            (rv = raptor_avltree_iterator_next(iter))) {
           raptor_abbrev_node** nodes;
           raptor_abbrev_node* node;
 
@@ -1388,7 +1386,7 @@ raptor_rdfxmla_serialize_statement(raptor_serializer* serializer,
         if(rv < 0) {
           raptor_log_error_formatted(serializer->world, RAPTOR_LOG_LEVEL_ERROR, NULL,
                                      "Unable to add properties to subject %p",
-                                     subject);
+                                     RAPTOR_VOIDP(subject));
           return rv;
         }
       }
@@ -1396,7 +1394,7 @@ raptor_rdfxmla_serialize_statement(raptor_serializer* serializer,
   
   } else {
     raptor_log_error_formatted(serializer->world, RAPTOR_LOG_LEVEL_ERROR, NULL,
-                               "Cannot serialize a triple with predicate node type %d",
+                               "Cannot serialize a triple with predicate node type %u",
                                statement->predicate->type);
     return 1;
   }

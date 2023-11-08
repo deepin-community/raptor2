@@ -4,13 +4,13 @@
 
 # Replace statement fields with term fields.
 s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
 s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
 s|->predicate|->predicate.value.uri|g;
 s|->predicate_type|->predicate.type|g;
-s|->object_literal_datatype|->object.value.literal.datatype|g;
+s|->subject_type|->subject.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->object_literal_datatype|->object.value.literal.datatype|g;
 
 
 # Deleted functions
@@ -76,7 +76,7 @@ s|^(.*raptor_uri_equals_func.*)$|/\* WARNING: raptor_uri_equals_func - deleted. 
 s|^(.*raptor_uri_handler.*)$|/\* WARNING: raptor_uri_handler - deleted. Entire URI implementation is internal and not replaceable. \*/ $1|g;
 s|^(.*raptor_uri_source.*)$|/\* WARNING: raptor_uri_source - deleted. URI source was useless. \*/ $1|g;
 
-# Deleted enums
+# Deleted enums and constants
 s|^(.*RAPTOR_IDENTIFIER_TYPE_ORDINAL.*)$|/\* WARNING: RAPTOR_IDENTIFIER_TYPE_ORDINAL - deleted. Deprecated value deleted. \*/ $1|g;
 s|^(.*RAPTOR_URI_SOURCE_UNKNOWN.*)$|/\* WARNING: RAPTOR_URI_SOURCE_UNKNOWN - deleted. URI source concept removed. \*/ $1|g;
 s|^(.*RAPTOR_URI_SOURCE_NOT_URI.*)$|/\* WARNING: RAPTOR_URI_SOURCE_NOT_URI - deleted. URI source concept removed. \*/ $1|g;
@@ -133,7 +133,7 @@ s|raptor_www_free\(|raptor_free_www\(|g;
 s|raptor_www_new_v2\(|raptor_new_www\(|g;
 s|raptor_www_new_with_connection_v2\(|raptor_new_www_with_connection\(|g;
 
-# Renamed enums
+# Renamed enums and constants
 s|RAPTOR_IDENTIFIER_TYPE_UNKNOWN|RAPTOR_TERM_TYPE_UNKNOWN|g;
 s|RAPTOR_IDENTIFIER_TYPE_RESOURCE|RAPTOR_TERM_TYPE_URI|g;
 s|RAPTOR_IDENTIFIER_TYPE_ANONYMOUS|RAPTOR_TERM_TYPE_BLANK|g;
@@ -327,25 +327,25 @@ s|^(.*)(raptor_statement_v2)(.*)$|/\* WARNING: raptor_statement_v2. Fields chang
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
 s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->predicate_type|->predicate.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->subject_type|->subject.type|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object_type|->object.type|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -354,25 +354,25 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
 s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->subject_type|->subject.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->predicate_type|->predicate.type|g;
+s|->object_type|->object.type|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -382,24 +382,24 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 # Replace statement fields with term fields.
 s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
 s|->predicate|->predicate.value.uri|g;
-s|->object_literal_datatype|->object.value.literal.datatype|g;
+s|->object_type|->object.type|g;
 s|->predicate_type|->predicate.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->subject_type|->subject.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->object_literal_datatype|->object.value.literal.datatype|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -408,25 +408,25 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
 s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->subject_type|->subject.type|g;
+s|->predicate_type|->predicate.type|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object_type|->object.type|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -435,25 +435,25 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
 s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->subject_type|->subject.type|g;
+s|->predicate_type|->predicate.type|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object_type|->object.type|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -462,25 +462,25 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
-s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->object_literal_datatype|->object.value.literal.datatype|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object_type|->object.type|g;
+s|->predicate_type|->predicate.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->subject_type|->subject.type|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -489,25 +489,25 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
 s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->subject_type|->subject.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->predicate_type|->predicate.type|g;
+s|->object_type|->object.type|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -516,25 +516,25 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
-s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
-s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
-s|->predicate|->predicate.value.uri|g;
-s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
+s|->object_literal_datatype|->object.value.literal.datatype|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->object_type|->object.type|g;
+s|->predicate|->predicate.value.uri|g;
+s|->predicate_type|->predicate.type|g;
+s|->subject_type|->subject.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
 
 
 # Deleted functions
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
 
 # Changed functions
 
@@ -543,13 +543,13 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 
 # Replace statement fields with term fields.
-s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->predicate_type|->predicate.type|g;
 s|->subject_type|->subject.type|g;
-s|->object_type|->object.type|g;
 s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->object_type|->object.type|g;
 s|->predicate|->predicate.value.uri|g;
 s|->object_literal_datatype|->object.value.literal.datatype|g;
-s|->predicate_type|->predicate.type|g;
 s|->object_literal_language|->object.value.literal.language|g;
 
 
@@ -557,11 +557,68 @@ s|->object_literal_language|->object.value.literal.language|g;
 
 # Deleted types
 
-# Deleted enums
+# Deleted enums and constants
 
 # Renamed functions
 
-# Renamed enums
+# Renamed enums and constants
+
+# Changed functions
+
+# Changed types
+# Perl script to upgrade raptor2 2.0.14 to 2.0.15
+
+
+# Replace statement fields with term fields.
+s|->object_literal_datatype|->object.value.literal.datatype|g;
+s|->object_literal_language|->object.value.literal.language|g;
+s|->predicate_type|->predicate.type|g;
+s|->subject_type|->subject.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->object_type|->object.type|g;
+s|->predicate|->predicate.value.uri|g;
+
+
+# Deleted functions
+
+# Deleted types
+
+# Deleted enums and constants
+
+# Renamed functions
+
+# Renamed enums and constants
+
+# Changed functions
+
+# Changed types
+# Perl script to upgrade raptor2 2.0.15 to 2.0.16
+
+
+# Replace statement fields with term fields.
+s|->object_literal_language|->object.value.literal.language|g;
+s|->object_literal_datatype|->object.value.literal.datatype|g;
+s|->object_type|->object.type|g;
+s|->predicate|->predicate.value.uri|g;
+s|->object|->object.value.uri or object.value.literal.string or object.value.blank.string /* WARNING: must choose one */|g;
+s|->subject_type|->subject.type|g;
+s|->subject|->subject.value.uri or subject.value.blank.string /* WARNING: must choose one */|g;
+s|->predicate_type|->predicate.type|g;
+
+
+# Deleted functions
+s|^(.*raptor_www_set_user_agent.*)$|/\* WARNING: raptor_www_set_user_agent - deleted. Deprecated for raptor_www_set_user_agent2 \*/ $1|g;
+s|^(.*raptor_www_set_proxy.*)$|/\* WARNING: raptor_www_set_proxy - deleted. Deprecated for raptor_www_set_proxy2 \*/ $1|g;
+s|^(.*raptor_www_set_http_accept.*)$|/\* WARNING: raptor_www_set_http_accept - deleted. Deprecated for raptor_www_set_http_accept2 \*/ $1|g;
+
+# Deleted types
+
+# Deleted enums and constants
+
+# Renamed functions
+
+# Renamed enums and constants
 
 # Changed functions
 

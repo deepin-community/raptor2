@@ -16,6 +16,8 @@ raptor_world_is_serializer_name
 raptor_world_generate_bnodeid
 raptor_world_set_generate_bnodeid_handler
 raptor_world_set_generate_bnodeid_parameters
+raptor_world_get_parsers_count
+raptor_world_get_serializers_count
 </SECTION>
 
 <SECTION>
@@ -45,6 +47,7 @@ raptor_snprintf
 raptor_vasprintf
 raptor_vsnprintf
 raptor_vsnprintf2
+raptor_sort_r
 raptor_log_handler
 raptor_log_message
 raptor_log_level
@@ -52,11 +55,13 @@ raptor_log_level_get_label
 raptor_domain
 raptor_domain_get_label
 raptor_data_compare_handler
+raptor_data_compare_arg_handler
 raptor_data_context_free_handler
 raptor_data_context_print_handler
 raptor_data_free_handler
 raptor_data_malloc_handler
 raptor_data_print_handler
+raptor_generate_bnodeid_handler
 raptor_syntax_bitflags
 raptor_syntax_description
 raptor_syntax_description_validate
@@ -124,6 +129,7 @@ raptor_statement_ntriples_write
 <SECTION>
 <FILE>section-constants</FILE>
 raptor_rdf_namespace_uri_len
+raptor_rdf_schema_namespace_uri_len
 raptor_xml_literal_datatype_uri_string_len
 RAPTOR_RDF_MS_URI
 RAPTOR_RDF_SCHEMA_URI
@@ -144,6 +150,7 @@ raptor_avltree_remove
 raptor_avltree_search
 raptor_avltree_set_print_handler
 raptor_avltree_size
+raptor_avltree_trim
 raptor_avltree_visit
 raptor_avltree_iterator
 raptor_new_avltree_iterator
@@ -298,6 +305,7 @@ raptor_sequence_set_at
 raptor_sequence_shift
 raptor_sequence_size
 raptor_sequence_sort
+raptor_sequence_sort_r
 raptor_sequence_swap
 raptor_sequence_unshift
 </SECTION>
@@ -310,8 +318,11 @@ raptor_new_www_with_connection
 raptor_free_www
 raptor_www_write_bytes_handler
 raptor_www_content_type_handler
+raptor_www_set_user_agent2
 raptor_www_set_user_agent
+raptor_www_set_proxy2
 raptor_www_set_proxy
+raptor_www_set_http_accept2
 raptor_www_set_http_accept
 raptor_www_set_http_cache_control
 raptor_www_set_write_bytes_handler

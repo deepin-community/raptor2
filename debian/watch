@@ -1,2 +1,2 @@
-version=2
-http://download.librdf.org/source/ raptor2-([\d+\.]+|\d+)\.tar\.gz debian uupdate
+version=4
+https://download.librdf.org/source/ raptor2-([\d+\.]+|\d+)\.tar\.gz

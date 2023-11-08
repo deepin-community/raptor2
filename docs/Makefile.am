@@ -116,7 +116,7 @@ raptor1-eol.html \
 $(man_MANS) \
 version.xml.in \
 upgrade-script.pl \
-raptor-1-to-2-map.tsv
+raptor-changes.tsv
 
 DISTCLEANFILES+= \
 raptor-fake.h
@@ -125,8 +125,8 @@ raptor-fake.h: $(top_builddir)/src/raptor2.h $(top_srcdir)/scripts/fix-gtkdoc-he
 	$(PERL) $(top_srcdir)/scripts/fix-gtkdoc-header.pl < $< > $@
 
 if MAINTAINER_MODE
-libraptor2.html: $(srcdir)/libraptor2.3 $(top_srcdir)/scripts/fix-groff-xhtml
-	-groff -man -Thtml -P-l $< | tidy -asxml -wrap 1000 2>/dev/null | $(PERL) $(top_srcdir)/scripts/fix-groff-xhtml $@
+libraptor2.html: $(srcdir)/libraptor2.3 $(top_srcdir)/scripts/fix-groff-xhtml.pl
+	-groff -man -Thtml -P-l $< | tidy -asxml -wrap 1000 2>/dev/null | $(PERL) $(top_srcdir)/scripts/fix-groff-xhtml.pl $@
 
 rdfcat.c: $(top_srcdir)/examples/rdfcat.c
 	$(install_sh_DATA) $? $@
@@ -141,17 +141,17 @@ raptor-tutorial-parsing.xml: rdfcat.c
 
 raptor-tutorial-serializing.xml: rdfprint.c rdfserialize.c
 
-raptor-changes.xml: $(srcdir)/raptor-1-to-2-map.tsv $(top_srcdir)/scripts/process-changes.pl
-	$(PERL) $(top_srcdir)/scripts/process-changes.pl --docbook-xml $@ $(PACKAGE) $(srcdir)/raptor-1-to-2-map.tsv
+raptor-changes.xml: $(srcdir)/raptor-changes.tsv $(top_srcdir)/scripts/process-changes.pl
+	$(PERL) $(top_srcdir)/scripts/process-changes.pl --docbook-xml $@ $(PACKAGE) $(srcdir)/raptor-changes.tsv
 
-raptor-formats.xml: $(top_builddir)/scripts/build-formats
-	$(top_builddir)/scripts/build-formats > $@
+raptor-formats.xml: $(top_builddir)/scripts/build-formats$(EXEEXT)
+	$(top_builddir)/scripts/build-formats$(EXEEXT) > $@
 
-$(top_builddir)/scripts/build-formats:
-	cd $(top_builddir)/scripts && $(MAKE) build-formats
+$(top_builddir)/scripts/build-formats$(EXEEXT):
+	cd $(top_builddir)/scripts && $(MAKE) build-formats$(EXEEXT)
 
-upgrade-script.pl: $(top_srcdir)/scripts/process-changes.pl $(srcdir)/raptor-1-to-2-map.tsv
-	$(PERL) $(top_srcdir)/scripts/process-changes.pl --upgrade-script $@ $(PACKAGE) $(srcdir)/raptor-1-to-2-map.tsv
+upgrade-script.pl: $(top_srcdir)/scripts/process-changes.pl $(srcdir)/raptor-changes.tsv
+	$(PERL) $(top_srcdir)/scripts/process-changes.pl --upgrade-script $@ $(PACKAGE) $(srcdir)/raptor-changes.tsv
 
 endif
 

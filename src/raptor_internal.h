@@ -76,22 +76,26 @@ void raptor_sign_free(void *ptr);
 
 #endif
 
-#ifdef HAVE___FUNC__
+#ifdef HAVE___FUNCTION__
 #else
-#define __func__ "???"
+#define __FUNCTION__ "???"
+#endif
+
+#ifndef RAPTOR_DEBUG_FH
+#define RAPTOR_DEBUG_FH stderr
 #endif
 
 #ifdef RAPTOR_DEBUG
 /* Debugging messages */
-#define RAPTOR_DEBUG1(msg) do {fprintf(stderr, "%s:%d:%s: " msg, __FILE__, __LINE__, __func__); } while(0)
-#define RAPTOR_DEBUG2(msg, arg1) do {fprintf(stderr, "%s:%d:%s: " msg, __FILE__, __LINE__, __func__, arg1);} while(0)
-#define RAPTOR_DEBUG3(msg, arg1, arg2) do {fprintf(stderr, "%s:%d:%s: " msg, __FILE__, __LINE__, __func__, arg1, arg2);} while(0)
-#define RAPTOR_DEBUG4(msg, arg1, arg2, arg3) do {fprintf(stderr, "%s:%d:%s: " msg, __FILE__, __LINE__, __func__, arg1, arg2, arg3);} while(0)
-#define RAPTOR_DEBUG5(msg, arg1, arg2, arg3, arg4) do {fprintf(stderr, "%s:%d:%s: " msg, __FILE__, __LINE__, __func__, arg1, arg2, arg3, arg4);} while(0)
-#define RAPTOR_DEBUG6(msg, arg1, arg2, arg3, arg4, arg5) do {fprintf(stderr, "%s:%d:%s: " msg, __FILE__, __LINE__, __func__, arg1, arg2, arg3, arg4, arg5);} while(0)
+#define RAPTOR_DEBUG1(msg) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: " msg, __FILE__, __LINE__, __FUNCTION__); } while(0)
+#define RAPTOR_DEBUG2(msg, arg1) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: " msg, __FILE__, __LINE__, __FUNCTION__, arg1);} while(0)
+#define RAPTOR_DEBUG3(msg, arg1, arg2) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: " msg, __FILE__, __LINE__, __FUNCTION__, arg1, arg2);} while(0)
+#define RAPTOR_DEBUG4(msg, arg1, arg2, arg3) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: " msg, __FILE__, __LINE__, __FUNCTION__, arg1, arg2, arg3);} while(0)
+#define RAPTOR_DEBUG5(msg, arg1, arg2, arg3, arg4) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: " msg, __FILE__, __LINE__, __FUNCTION__, arg1, arg2, arg3, arg4);} while(0)
+#define RAPTOR_DEBUG6(msg, arg1, arg2, arg3, arg4, arg5) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: " msg, __FILE__, __LINE__, __FUNCTION__, arg1, arg2, arg3, arg4, arg5);} while(0)
 
 #ifndef RAPTOR_ASSERT_DIE
-#define RAPTOR_ASSERT_DIE abort();
+#define RAPTOR_ASSERT_DIE(x) abort();
 #endif
 
 #else
@@ -109,7 +113,7 @@ void raptor_sign_free(void *ptr);
 #define SYSTEM_FREE(ptr)   free(ptr)
 
 #ifndef RAPTOR_ASSERT_DIE
-#define RAPTOR_ASSERT_DIE
+#define RAPTOR_ASSERT_DIE(x) x;
 #endif
 
 #endif
@@ -118,7 +122,7 @@ void raptor_sign_free(void *ptr);
 #ifdef RAPTOR_DISABLE_ASSERT_MESSAGES
 #define RAPTOR_ASSERT_REPORT(line)
 #else
-#define RAPTOR_ASSERT_REPORT(msg) fprintf(stderr, "%s:%d: (%s) assertion failed: " msg "\n", __FILE__, __LINE__, __func__);
+#define RAPTOR_ASSERT_REPORT(msg) fprintf(RAPTOR_DEBUG_FH, "%s:%d: (%s) assertion failed: " msg "\n", __FILE__, __LINE__, __FUNCTION__);
 #endif
 
 
@@ -137,42 +141,61 @@ void raptor_sign_free(void *ptr);
 #define RAPTOR_ASSERT(condition, msg) do { \
   if(condition) { \
     RAPTOR_ASSERT_REPORT(msg) \
-    RAPTOR_ASSERT_DIE \
+    RAPTOR_ASSERT_DIE(return) \
   } \
 } while(0)
 
 #define RAPTOR_ASSERT_RETURN(condition, msg, ret) do { \
   if(condition) { \
     RAPTOR_ASSERT_REPORT(msg) \
-    RAPTOR_ASSERT_DIE \
-    return ret; \
+    RAPTOR_ASSERT_DIE(return ret) \
   } \
 } while(0)
 
 #define RAPTOR_ASSERT_OBJECT_POINTER_RETURN(pointer, type) do { \
   if(!pointer) { \
     RAPTOR_ASSERT_REPORT("object pointer of type " #type " is NULL.") \
-    RAPTOR_ASSERT_DIE \
-    return; \
+    RAPTOR_ASSERT_DIE(return) \
   } \
 } while(0)
 
 #define RAPTOR_ASSERT_OBJECT_POINTER_RETURN_VALUE(pointer, type, ret) do { \
   if(!pointer) { \
     RAPTOR_ASSERT_REPORT("object pointer of type " #type " is NULL.") \
-    RAPTOR_ASSERT_DIE \
-    return ret; \
+    RAPTOR_ASSERT_DIE(return ret) \
   } \
 } while(0)
 
 #endif
 
+/* _Pragma() is C99 and is the only way to include pragmas since you
+ * cannot use #pragma in a macro
+ *
+ * #if defined __STDC_VERSION__ && (__STDC_VERSION__ >= 199901L)
+ *
+ * Valid for clang or GCC >= 4.9.0
+ */
+#if defined(__clang__) || (defined(__GNUC__) && ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((4) << 16) + (9)))
+#define PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START \
+  _Pragma ("GCC diagnostic push") \
+  _Pragma ("GCC diagnostic ignored \"-Wformat-nonliteral\"")
+#define PRAGMA_IGNORE_WARNING_LONG_LONG_START \
+  _Pragma ("GCC diagnostic push") \
+  _Pragma ("GCC diagnostic ignored \"-Wlong-long\"")
+#define PRAGMA_IGNORE_WARNING_END \
+  _Pragma ("GCC diagnostic pop")
+#else
+#define PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START
+#define PRAGMA_IGNORE_WARNING_LONG_LONG_STAR
+#define PRAGMA_IGNORE_WARNING_END
+#endif
+
 
 /* Fatal errors - always happen */
-#define RAPTOR_FATAL1(msg) do {fprintf(stderr, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __func__); abort();} while(0)
-#define RAPTOR_FATAL2(msg,arg) do {fprintf(stderr, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __func__, arg); abort();} while(0)
-#define RAPTOR_FATAL3(msg,arg1,arg2) do {fprintf(stderr, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __func__, arg1, arg2); abort();} while(0)
-#define RAPTOR_FATAL4(msg,arg1,arg2,arg3) do {fprintf(stderr, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __func__, arg1, arg2, arg3); abort();} while(0)
+#define RAPTOR_FATAL1(msg) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __FUNCTION__); abort();} while(0)
+#define RAPTOR_FATAL2(msg,arg) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __FUNCTION__, arg); abort();} while(0)
+#define RAPTOR_FATAL3(msg,arg1,arg2) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __FUNCTION__, arg1, arg2); abort();} while(0)
+#define RAPTOR_FATAL4(msg,arg1,arg2,arg3) do {fprintf(RAPTOR_DEBUG_FH, "%s:%d:%s: fatal error: " msg, __FILE__, __LINE__ , __FUNCTION__, arg1, arg2, arg3); abort();} while(0)
 
 #define MAX_ASCII_INT_SIZE 13
   
@@ -180,8 +203,14 @@ void raptor_sign_free(void *ptr);
 
 #ifdef RAPTOR_XML_LIBXML
 
+/* newer ICU (via libxml/encoding.h) requires C++ context */
+#ifdef __cplusplus
+extern "C++" {
+#endif
 #include <libxml/parser.h>
-
+#ifdef __cplusplus
+}
+#endif
 
 /* libxml-only prototypes */
 
@@ -479,16 +508,16 @@ struct raptor_parser_s {
   raptor_locator locator;
 
   /* non-0 if parser had fatal error and cannot continue */
-  int failed : 1;
+  unsigned int failed : 1;
 
   /* non-0 to enable emitting graph marks (default set).  Intended
    * for use by GRDDL the parser on it's child parsers to prevent
    * multiple start/end marks on the default graph.
    */
-  int emit_graph_marks : 1;
+  unsigned int emit_graph_marks : 1;
 
   /* non-0 if have emitted start default graph mark */
-  int emitted_default_graph : 1;
+  unsigned int emitted_default_graph : 1;
 
   /* generated ID counter */
   int genid;
@@ -704,6 +733,7 @@ int raptor_parser_set_uri_filter_no_net(void *user_data, raptor_uri* uri);
 void raptor_parser_parse_uri_write_bytes(raptor_www* www, void *userdata, const void *ptr, size_t size, size_t nmemb);
 void raptor_parser_fatal_error(raptor_parser* parser, const char *message, ...) RAPTOR_PRINTF_FORMAT(2, 3);
 void raptor_parser_error(raptor_parser* parser, const char *message, ...) RAPTOR_PRINTF_FORMAT(2, 3);
+RAPTOR_INTERNAL_API void raptor_parser_log_error(raptor_parser* parser, raptor_log_level level, const char *message, ...) RAPTOR_PRINTF_FORMAT(3, 4);
 RAPTOR_INTERNAL_API void raptor_parser_log_error_varargs(raptor_parser* parser, raptor_log_level level, const char *message, va_list arguments) RAPTOR_PRINTF_FORMAT(3, 0);
 void raptor_parser_warning(raptor_parser* parser, const char *message, ...) RAPTOR_PRINTF_FORMAT(2, 3);
 
@@ -750,9 +780,8 @@ int raptor_check_ordinal(const unsigned char *name);
 #endif
 #endif
 
-
 /* raptor_nfc_icu.c */
-int raptor_nfc_icu_check (const unsigned char* string, size_t len, int *error);
+int raptor_nfc_icu_check (const unsigned char* string, size_t len);
 
 
 /* raptor_namespace.c */
@@ -925,6 +954,7 @@ int raptor_init_serializer_rdfxmla(raptor_world* world);
 
 /* raptor_serialize_turtle.c */  
 int raptor_init_serializer_turtle(raptor_world* world);
+int raptor_init_serializer_mkr(raptor_world* world);
 
 /* raptor_serialize_html.c */  
 int raptor_init_serializer_html(raptor_world* world);
@@ -937,7 +967,7 @@ extern const raptor_unichar raptor_unicode_max_codepoint;
 
 int raptor_unicode_is_namestartchar(raptor_unichar c);
 int raptor_unicode_is_namechar(raptor_unichar c);
-int raptor_unicode_check_utf8_nfc_string(const unsigned char *input, size_t length, int* error);
+int raptor_unicode_check_utf8_nfc_string(const unsigned char *input, size_t length);
 
 /* raptor_www*.c */
 #ifdef RAPTOR_WWW_LIBXML
@@ -1022,7 +1052,7 @@ int raptor_www_libxml_fetch(raptor_www *www);
 
 void raptor_www_error(raptor_www *www, const char *message, ...) RAPTOR_PRINTF_FORMAT(2, 3);
 
-void raptor_www_curl_init(raptor_www *www);
+int raptor_www_curl_init(raptor_www *www);
 void raptor_www_curl_free(raptor_www *www);
 int raptor_www_curl_fetch(raptor_www *www);
 int raptor_www_curl_set_ssl_cert_options(raptor_www* www, const char* cert_filename, const char* cert_type, const char* cert_passphrase);
@@ -1196,15 +1226,11 @@ struct raptor_uri_detail_s
 
 
 /* for time_t */
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_TIME_H
+#include <time.h>
 #endif
 
 /* parsedate.c */
@@ -1224,12 +1250,11 @@ time_t raptor_parse_date(const char *p, time_t *now);
 #endif
 
 /* only used internally now */
-typedef void (*raptor_simple_message_handler)(void *user_data, const char *message, ...);
+typedef void (*raptor_simple_message_handler)(void *user_data, const char *message, ...) RAPTOR_PRINTF_FORMAT(2, 3);
 
 
 /* turtle_common.c */
-RAPTOR_INTERNAL_API int raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer, const unsigned char *text, size_t len, int delim, raptor_simple_message_handler error_handler, void *error_data);
-RAPTOR_INTERNAL_API int raptor_turtle_check_uri_string(unsigned char *string);
+RAPTOR_INTERNAL_API int raptor_stringbuffer_append_turtle_string(raptor_stringbuffer* stringbuffer, const unsigned char *text, size_t len, int delim, raptor_simple_message_handler error_handler, void *error_data, int is_uri);
 
 
 /* raptor_abbrev.c */
@@ -1247,8 +1272,8 @@ typedef struct {
 #define RAPTOR_DEBUG_ABBREV_NODE(label, node) \
   do {                                                       \
     RAPTOR_DEBUG1(label " ");                                \
-    raptor_term_print_as_ntriples(node->term, stderr);       \
-    fprintf(stderr, " (refcount %d subject %d object %d)\n", \
+    raptor_term_print_as_ntriples(node->term, RAPTOR_DEBUG_FH);       \
+    fprintf(RAPTOR_DEBUG_FH, " (refcount %d subject %d object %d)\n", \
             node->ref_count,                                 \
             node->count_as_subject,                          \
             node->count_as_object);                          \
@@ -1303,8 +1328,21 @@ raptor_qname* raptor_new_qname_from_resource(raptor_sequence* namespaces, raptor
  */
 typedef struct raptor_turtle_writer_s raptor_turtle_writer;
 
+/**
+ * raptor_turtle_writer_flags:
+ * @TURTLE_WRITER_FLAG_AUTO_INDENT: auto indent
+ * @TURTLE_WRITER_FLAG_MKR: write mkr not turtle
+ *
+ * Bit flags for raptor_new_turtle_writer()
+ */
+typedef enum {
+  TURTLE_WRITER_FLAG_AUTO_INDENT = 1,
+  TURTLE_WRITER_FLAG_MKR = 2
+} raptor_turtle_writer_flags;
+
+
 /* Turtle Writer Class (raptor_turtle_writer) */
-RAPTOR_INTERNAL_API raptor_turtle_writer* raptor_new_turtle_writer(raptor_world* world, raptor_uri* base_uri, int write_base_uri, raptor_namespace_stack *nstack, raptor_iostream* iostr);
+RAPTOR_INTERNAL_API raptor_turtle_writer* raptor_new_turtle_writer(raptor_world* world, raptor_uri* base_uri, int write_base_uri, raptor_namespace_stack *nstack, raptor_iostream* iostr, int flags);
 RAPTOR_INTERNAL_API void raptor_free_turtle_writer(raptor_turtle_writer* turtle_writer);
 RAPTOR_INTERNAL_API void raptor_turtle_writer_raw(raptor_turtle_writer* turtle_writer, const unsigned char *s);
 RAPTOR_INTERNAL_API void raptor_turtle_writer_raw_counted(raptor_turtle_writer* turtle_writer, const unsigned char *s, unsigned int len);
@@ -1315,6 +1353,7 @@ RAPTOR_INTERNAL_API void raptor_turtle_writer_decrease_indent(raptor_turtle_writ
 RAPTOR_INTERNAL_API void raptor_turtle_writer_newline(raptor_turtle_writer *turtle_writer);
 RAPTOR_INTERNAL_API int raptor_turtle_writer_reference(raptor_turtle_writer* turtle_writer, raptor_uri* uri);
 RAPTOR_INTERNAL_API int raptor_turtle_writer_literal(raptor_turtle_writer* turtle_writer, raptor_namespace_stack *nstack, const unsigned char *s, const unsigned char* lang, raptor_uri* datatype);
+RAPTOR_INTERNAL_API void raptor_turtle_writer_csv_string(raptor_turtle_writer* turtle_writer, const unsigned char *s);
 RAPTOR_INTERNAL_API void raptor_turtle_writer_qname(raptor_turtle_writer* turtle_writer, raptor_qname* qname);
 RAPTOR_INTERNAL_API int raptor_turtle_writer_quoted_counted_string(raptor_turtle_writer* turtle_writer, const unsigned char *s, size_t length);
 void raptor_turtle_writer_comment(raptor_turtle_writer* turtle_writer, const unsigned char *s);
@@ -1326,6 +1365,7 @@ void raptor_turtle_writer_bnodeid(raptor_turtle_writer* turtle_writer, const uns
 int raptor_turtle_writer_uri(raptor_turtle_writer* turtle_writer, raptor_uri* uri);
 int raptor_turtle_writer_term(raptor_turtle_writer* turtle_writer, raptor_term* term);
 int raptor_turtle_is_legal_turtle_qname(raptor_qname* qname);
+
 
 /**
  * raptor_json_writer:
@@ -1367,7 +1407,7 @@ size_t raptor_format_integer(char* buffer, size_t bufsize, int integer, unsigned
 
 #define RAPTOR_CHECK_CONSTRUCTOR_WORLD(world)                           \
   do {                                                                  \
-    if(raptor_check_world_internal(world, __func__))                 \
+    if(raptor_check_world_internal(world, __FUNCTION__))                 \
        return NULL;                                                     \
   } while(0)  
     
@@ -1473,6 +1513,9 @@ void raptor_www_finish(raptor_world* world);
 
 /* Unsafe casts: narrowing a value */
 #define RAPTOR_BAD_CAST(t, v) (t)(v)
+
+/* Cast to void* for debugging prints with %p */
+#define RAPTOR_VOIDP(p) (void*)p
 
 /* end of RAPTOR_INTERNAL */
 #endif

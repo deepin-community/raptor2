@@ -1,8 +1,135 @@
-raptor2 (2.0.14.1-1+eagle) UNRELEASED; urgency=medium
+raptor2 (2.0.16-3) unstable; urgency=medium
 
-  * update
+  * QA upload.
+  * Backport upstream commit 3b7ed0e67f919e49ea8b1f5387c14b762f446b45 to fix
+    the selection of the used sort_r() on Hurd; patch
+    upstream_Fix-sort_r-selection-on-GNU-Hurd.patch.
 
- -- Dave Beckett <dajobe@debian.org>  Fri, 13 Nov 2020 11:17:10 +0800
+ -- Pino Toscano <pino@debian.org>  Sat, 08 Jul 2023 06:17:35 +0200
+
+raptor2 (2.0.16-2) unstable; urgency=medium
+
+  * QA upload.
+  * Move from experimental to unstable.
+  * Add libcurl-ssl-dev as alternative to libcurl4-gnutls-dev. LP: #1899809
+  * Add libicu-dev as BD.
+  * Enable all tests but do not run them in parallel.
+
+ -- Håvard F. Aasen <havard.f.aasen@pfft.no>  Mon, 03 Jul 2023 08:56:32 +0200
+
+raptor2 (2.0.16-1) experimental; urgency=medium
+
+  * QA upload.
+  * New upstream version.
+    + Drop patches (included upstream):
+      - Calculate-max-nspace-declarations-correctly-for-XML-.patch
+      - CVE-2020-25713-raptor2-malformed-input-file-can-lead.patch
+      - configure.ac-Allow-use-of-pkg-config-to-detect-the-libxsl.patch
+      - configure.ac-libxml2.patch
+    + Drop unused lintian overrides.
+    + Update symbol file.
+    + Update copyright info.
+  * Bump Standards-Version, no changes.
+  * Run wrap-and-sort -ast.
+  * Create repo on salsa and add Vcs-* fields to debian/control.
+  * Install gtk-doc reference manual to native path
+    (/usr/share/gtk-doc/html/raptor2) instead of
+    /usr/share/doc/libraptor2-dev/raptor2/.
+
+ -- Andreas Metzler <ametzler@debian.org>  Sat, 06 May 2023 11:29:05 +0200
+
+raptor2 (2.0.15-4) unstable; urgency=medium
+
+  * QA upload.
+  * libraptor2-doc: Add Breaks+Replaces: libraptor2-dev (<< 2.0.15-3) for
+    documentation reorganisation.
+
+ -- Andreas Beckmann <anbe@debian.org>  Mon, 03 Oct 2022 01:38:55 +0200
+
+raptor2 (2.0.15-3) unstable; urgency=medium
+
+  * QA upload.
+  * debian/changelog: Fix some typos.
+  * debian/control:
+    + libraptor2-dev: Drop Depends on pkg-config.
+    + raptor2-utils: Drop Conflicts/Replaces (no longer needed).
+    + libraptor2-doc:
+      - Mark package Multi-Arch: foreign.
+      - Remove documentation path from package description.
+  * debian/patches:
+    + Fix FTBFS when libxml2 is detected via pkg-config (Closes: #949490).
+    + Fix a typo in an existing patch name.
+  * debian/rules:
+    + Don't install upstream's README file in all binary packages.
+      The README file is now only installed in libraptor2-doc.
+    + Drop dh_installchangelogs override.
+    + Drop dh_strip override; dbgsym-migration is complete.
+  * Drop "debian/tmp" from installation paths.
+  * libraptor2-0: Add symbols file.
+  * libraptor2-doc: Replace .install file with .docs.
+  * lintian-overrides: Add overrides for very-long-line-length-in-source-file
+    and source-is-missing messages.
+  * Add debian/upstream/metadata file.
+
+ -- Hugh McMaster <hugh.mcmaster@outlook.com>  Thu, 29 Sep 2022 21:27:03 +1000
+
+raptor2 (2.0.15-2) unstable; urgency=medium
+
+  * QA upload.
+  * Include missing LDFLAGS "-Wl,--default-symver".
+
+ -- Håvard F. Aasen <havard.f.aasen@pfft.no>  Tue, 26 Jul 2022 19:55:50 +0200
+
+raptor2 (2.0.15-1) unstable; urgency=medium
+
+  * QA upload.
+  * New upstream release. Closes: #906938
+  * Set Debian QA as maintainer. See #1012727
+  * Rebase patches.
+  * d/rules:
+    - Rewrite to use dh-sequencer.
+  * d/control:
+    - Bump debhelper to 13. Closes: #965792
+    - Drop dh-autoreconf, quilt and cdbs as build dependencies.
+      Add pkg-config and libglib2.0-dev as build dependencies.
+    - Apply libraptor2-dev Multi-Arch: same.
+    - Document Rules-Requires-Root.
+    - Use secure URI for homepage.
+    - Update Standards-Version to 4.6.1
+    - Remove version constraints on packages, no longer needed.
+    - Remove breaks in package libraptor2-0.
+  * d/watch:
+    - Bump to version 4.
+    - Change to secure URI.
+  * Migrate to dbgsym packages.
+  * Upstream patch to use pkg-config, to find xslt library. Closes: #948873
+    Thanks to Hugh McMaster for patch.
+  * Add d/not-installed.
+  * Change d/*.install, install files generated at buildtime.
+  * Drop *.doc-base file.
+  * Remove end-of-line whitespace in d/changelog.
+  * Fix typo in patch description.
+  * Add lintian-overrides for 'source-is-missing' *.html files.
+  * wrap-and-sort -at
+  * d/copyright: Convert to machine-readable format.
+
+ -- Håvard F. Aasen <havard.f.aasen@pfft.no>  Tue, 26 Jul 2022 11:02:21 +0200
+
+raptor2 (2.0.14-1.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Malformed input file can lead to a segfault (CVE-2020-25713)
+    (Closes: #974664)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 02 Jan 2021 11:14:00 +0100
+
+raptor2 (2.0.14-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Calculate max nspace declarations correctly for XML writer
+    (CVE-2017-18926) (Closes: #973889)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Fri, 06 Nov 2020 22:08:54 +0100
 
 raptor2 (2.0.14-1) unstable; urgency=medium
 
@@ -21,7 +148,7 @@ raptor2 (2.0.13-1) unstable; urgency=medium
 
 raptor2 (2.0.12-4) unstable; urgency=low
 
-  * Use dh-autoreconf at build time to support new ports. 
+  * Use dh-autoreconf at build time to support new ports.
     Patch from Steve Langasek - thanks. (Closes: #735400)
   * debian/rules: Altered clean target to work with dh_autoreconf
     deleting Makefile it needs.
@@ -155,7 +282,7 @@ raptor2 (1.9.1-1) unstable; urgency=low
  -- Dave Beckett <dajobe@debian.org>  Wed, 01 Dec 2010 23:20:09 -0800
 
 raptor2 (1.9.0-1) unstable; urgency=low
- 
+
    * New upstream release
    * debian/control:
      - Standards version 3.9.1
@@ -178,7 +305,7 @@ raptor (1.4.21-2) unstable; urgency=low
       is not needed for regular library-using users (Closes: #573270)
   * debian/patches/01-write_bytes.patch: Added from upstream GIT to fix
     write_bytes() factory return values
-  
+
  -- Dave Beckett <dajobe@debian.org>  Wed, 10 Mar 2010 06:56:48 -0800
 
 raptor (1.4.21-1) unstable; urgency=low
@@ -342,7 +469,7 @@ raptor (1.4.8-3) unstable; urgency=low
 
 raptor (1.4.8-2) unstable; urgency=low
 
-  * Bump shlibs for 1.4.8 
+  * Bump shlibs for 1.4.8
 
  -- Dave Beckett <dajobe@debian.org>  Sun, 15 Jan 2006 19:26:26 -0800
 
@@ -427,8 +554,8 @@ raptor (1.3.1-3) unstable; urgency=low
 
   * Update to depend on libcurl3-dev | libcurl2-dev
   * Unicode NFC checking is broken via GNOME glib so added
-    --disable-nfc-check and removed the libglib2.0-dev dependency. 
-  
+    --disable-nfc-check and removed the libglib2.0-dev dependency.
+
  -- Dave Beckett <Dave.Beckett@bristol.ac.uk>  Mon, 19 Jul 2004 00:08:57 +0100
 
 raptor (1.3.1-2) unstable; urgency=low
@@ -475,7 +602,7 @@ raptor (1.1.0-1) unstable; urgency=low
 raptor (1.0.0-5) unstable; urgency=low
 
   * libraptor1-dev recommends raptor-utils
-  * libraptor1-dev conflicts with libraptor1 1.0.0-4 or earlier 
+  * libraptor1-dev conflicts with libraptor1 1.0.0-4 or earlier
     over libraptor.3
 
  -- Dave Beckett <Dave.Beckett@bristol.ac.uk>  Fri, 12 Sep 2003 13:43:24 +0100
@@ -520,7 +647,7 @@ raptor (0.9.11-3) unstable; urgency=high
 
 raptor (0.9.11-2) unstable; urgency=low
 
-  * Fix build to not be a native package. 
+  * Fix build to not be a native package.
 
  -- Dave Beckett <Dave.Beckett@bristol.ac.uk>  Thu, 31 Jul 2003 22:33:21 +0100
 
@@ -551,12 +678,12 @@ raptor (0.9.9-1) unstable; urgency=low
  -- Dave Beckett <Dave.Beckett@bristol.ac.uk>  Thu, 29 Mar 2003 22:03:00 -0000
 
 raptor (0.9.8-2) unstable; urgency=low
- 
+
   * (libraptor0-dev) Add missing raptor-config.
   * Manual page for raptor-config.
- 
+
  -- Dave Beckett <Dave.Beckett@bristol.ac.uk>  Thu, 13 Feb 2003 18:42:00 -0000
- 
+
 raptor (0.9.8-1) unstable; urgency=low
 
   * New upstream release (0.9.8).
@@ -581,4 +708,3 @@ raptor (0.9.5-1) unstable; urgency=low
   * First Debian package.
 
  -- Dave Beckett <Dave.Beckett@bristol.ac.uk>  Thu, 13 Jun 2002 17:27:03 +0100
-

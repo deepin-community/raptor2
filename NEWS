@@ -1,5 +1,32 @@
                         Raptor RDF Syntax Library - News
 
+2023-03-01 Raptor2 Version 2.0.16 Released
+
+   Fixes CVE-2017-18926 and CVE-2020-25713
+   Multiple Appveyor Windows and CMake build fixes by 0u812. (Note: the
+   resulting binaries and libraries were not tested on Windows)
+   Turtle parser now reads input in chunks so can handle huge files. Patch
+   by Sebastian Freundt
+   Added a serializer for the mKR language. Patch by Richard H.
+   McCullough.
+   Rapper utility now counts triples using longs
+   Several smaller portability fixes for OpenBSD and cross building
+
+   See the Raptor2 2.0.16 Release Notes for the full details of the
+   changes.
+
+2014-11-01 Raptor2 Version 2.0.15 Released
+
+   Made several fixes to Turtle / N-Triples family of parsers and
+   serializers
+   Added utility functions for re-entrant sorting of objects and
+   sequences.
+   Made other fixes and improvements including fixing reported issues:
+   0000574, 0000575, 0000576, 0000577, 0000579, 0000581 and 0000584.
+
+   See the Raptor2 2.0.15 Release Notes for the full details of the
+   changes.
+
 2014-05-05 Raptor2 Version 2.0.14 Released
 
    Many code quality fixes from clang and coverity primarily in error path
@@ -716,5 +743,5 @@
    First release
      __________________________________________________________________
 
-   Copyright (C) 2001-2014 Dave Beckett
+   Copyright (C) 2001-2023 Dave Beckett
    Copyright (C) 2001-2005 University of Bristol

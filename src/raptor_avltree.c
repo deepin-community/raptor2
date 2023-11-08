@@ -329,6 +329,23 @@ raptor_avltree_delete(raptor_avltree* tree, void* p_data)
 }
 
 
+/**
+ * raptor_avltree_trim:
+ * @tree: AVLTree object
+ *
+ * Delete all nodes from an AVL tree but keep the shell.
+ */
+void
+raptor_avltree_trim(raptor_avltree* tree)
+{
+  if(!tree)
+    return;
+  
+  raptor_free_avltree_internal(tree, tree->root);
+  tree->root = NULL;
+}
+
+
 static int
 raptor_avltree_visit_internal(raptor_avltree* tree, raptor_avltree_node* node,
                               int depth,
@@ -378,7 +395,11 @@ static void
 raptor_avltree_print_node(raptor_avltree_node* node) 
 {
   fprintf(stderr, "%p: parent %p  left %p  right %p  data %p",
-          node, node->parent, node->left, node->right, node->data);
+          RAPTOR_VOIDP(node),
+          RAPTOR_VOIDP(node->parent),
+          RAPTOR_VOIDP(node->left),
+          RAPTOR_VOIDP(node->right),
+          RAPTOR_VOIDP(node->data));
 }
 
 
@@ -688,7 +709,7 @@ raptor_avltree_sprout(raptor_avltree* tree, raptor_avltree_node* parent,
     }
 
 #if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
-    RAPTOR_DEBUG2("Creating new node %p\n", *node_pp);
+    RAPTOR_DEBUG2("Creating new node %p\n", RAPTOR_VOIDP(*node_pp));
 #endif
     
     (*node_pp)->parent = parent;
@@ -758,7 +779,10 @@ raptor_avltree_delete_internal(raptor_avltree* tree,
     return rdata;
   }
 
-  cmp = tree->compare_handler((*node_pp)->data, p_data);
+  if(p_data)
+    cmp = tree->compare_handler((*node_pp)->data, p_data);
+  else
+    cmp = 0;
 
   if(cmp > 0) {
     RAPTOR_AVLTREE_DEBUG1("too high - scan left\n");
@@ -1467,7 +1491,7 @@ raptor_avltree_print(raptor_avltree* tree, FILE* stream)
     if(tree->print_handler)
       tree->print_handler(data, stream);
     else
-      fprintf(stream, "Data Node %p\n", data);
+      fprintf(stream, "Data Node %p\n", RAPTOR_VOIDP(data));
   }
   /*assert(i == tree->size);*/
 
@@ -1491,7 +1515,11 @@ raptor_avltree_dump_internal(raptor_avltree* tree, raptor_avltree_node* node,
   for(i = 0; i < depth; i++)
     fputs("  ", stream);
   fprintf(stream, "Node %p: parent %p  left %p  right %p  data %p\n",
-          node, node->parent, node->left, node->right, node->data);
+          RAPTOR_VOIDP(node),
+          RAPTOR_VOIDP(node->parent),
+          RAPTOR_VOIDP(node->left),
+          RAPTOR_VOIDP(node->right),
+          RAPTOR_VOIDP(node->data));
   if(tree->print_handler) {
     for(i= 0; i < depth; i++)
       fputs("  ", stream);
@@ -1512,7 +1540,8 @@ raptor_avltree_dump_internal(raptor_avltree* tree, raptor_avltree_node* node,
 int
 raptor_avltree_dump(raptor_avltree* tree, FILE* stream)
 {
-  fprintf(stream, "Dumping avltree %p size %u\n", tree, tree->size);
+  fprintf(stream, "Dumping avltree %p size %u\n", RAPTOR_VOIDP(tree),
+          tree->size);
 
   return raptor_avltree_dump_internal(tree, tree->root, 0, stream);
 }
@@ -1543,8 +1572,8 @@ raptor_avltree_check(raptor_avltree* tree)
   
   raptor_avltree_check_internal(tree, tree->root, &count);
   if(count != tree->size) {
-    fprintf(stderr, "Tree %p nodes count is %u.  actual count %d\n",
-            tree, tree->size, count);
+    fprintf(stderr, "Tree %p nodes count is %u.  actual count %u\n",
+            RAPTOR_VOIDP(tree), tree->size, count);
     abort();
   }
 }
