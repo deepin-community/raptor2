@@ -221,6 +221,19 @@ The parsers and serializers in raptor can handle different MIME Types with diffe
       </listitem>
     </varlistentry>
 
+    <varlistentry><term>mKR my Knowledge Representation Language (<literal>mkr</literal>)</term>
+      <listitem>
+      <itemizedlist>
+        <listitem><para><literal>text/mkr</literal> with q 1.0</para></listitem>
+        <listitem><para><literal>application/mkr</literal> with q 1.0</para></listitem>
+        <listitem><para><literal>application/x-mkr</literal> with q 0.8</para></listitem>
+        <listitem><para><literal>text/n3</literal> with q 0.3</para></listitem>
+        <listitem><para><literal>text/rdf+n3</literal> with q 0.3</para></listitem>
+        <listitem><para><literal>application/rdf+n3</literal> with q 0.3</para></listitem>
+      </itemizedlist>
+      </listitem>
+    </varlistentry>
+
   </variablelist>
 </section>
 
@@ -247,6 +260,15 @@ The parsers and serializers in raptor can handle different MIME Types with diffe
       </listitem>
     </varlistentry>
 
+    <varlistentry><term><literal>application/mkr</literal></term>
+      <listitem>
+      <itemizedlist>
+        <listitem><para>mKR my Knowledge Representation Language Serializer (<literal>mkr</literal>) with q 1.0</para></listitem>
+    <listitem><para>No parser.</para></listitem>
+      </itemizedlist>
+      </listitem>
+    </varlistentry>
+
     <varlistentry><term><literal>application/n-triples</literal></term>
       <listitem>
       <itemizedlist>
@@ -261,6 +283,7 @@ The parsers and serializers in raptor can handle different MIME Types with diffe
       <itemizedlist>
         <listitem><para>Turtle Terse RDF Triple Language Parser (<literal>turtle</literal>) with q 0.3</para></listitem>
         <listitem><para>Turtle Terse RDF Triple Language Serializer (<literal>turtle</literal>) with q 0.3</para></listitem>
+        <listitem><para>mKR my Knowledge Representation Language Serializer (<literal>mkr</literal>) with q 0.3</para></listitem>
       </itemizedlist>
       </listitem>
     </varlistentry>
@@ -299,6 +322,15 @@ The parsers and serializers in raptor can handle different MIME Types with diffe
       <itemizedlist>
         <listitem><para>Turtle Terse RDF Triple Language Parser (<literal>turtle</literal>) with q 1.0</para></listitem>
         <listitem><para>Turtle Terse RDF Triple Language Serializer (<literal>turtle</literal>) with q 1.0</para></listitem>
+      </itemizedlist>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry><term><literal>application/x-mkr</literal></term>
+      <listitem>
+      <itemizedlist>
+        <listitem><para>mKR my Knowledge Representation Language Serializer (<literal>mkr</literal>) with q 0.8</para></listitem>
+    <listitem><para>No parser.</para></listitem>
       </itemizedlist>
       </listitem>
     </varlistentry>
@@ -360,11 +392,21 @@ The parsers and serializers in raptor can handle different MIME Types with diffe
       </listitem>
     </varlistentry>
 
+    <varlistentry><term><literal>text/mkr</literal></term>
+      <listitem>
+      <itemizedlist>
+        <listitem><para>mKR my Knowledge Representation Language Serializer (<literal>mkr</literal>) with q 1.0</para></listitem>
+    <listitem><para>No parser.</para></listitem>
+      </itemizedlist>
+      </listitem>
+    </varlistentry>
+
     <varlistentry><term><literal>text/n3</literal></term>
       <listitem>
       <itemizedlist>
         <listitem><para>Turtle Terse RDF Triple Language Parser (<literal>turtle</literal>) with q 0.3</para></listitem>
         <listitem><para>Turtle Terse RDF Triple Language Serializer (<literal>turtle</literal>) with q 0.3</para></listitem>
+        <listitem><para>mKR my Knowledge Representation Language Serializer (<literal>mkr</literal>) with q 0.3</para></listitem>
       </itemizedlist>
       </listitem>
     </varlistentry>
@@ -392,6 +434,7 @@ The parsers and serializers in raptor can handle different MIME Types with diffe
       <itemizedlist>
         <listitem><para>Turtle Terse RDF Triple Language Parser (<literal>turtle</literal>) with q 0.3</para></listitem>
         <listitem><para>Turtle Terse RDF Triple Language Serializer (<literal>turtle</literal>) with q 0.3</para></listitem>
+        <listitem><para>mKR my Knowledge Representation Language Serializer (<literal>mkr</literal>) with q 0.3</para></listitem>
       </itemizedlist>
       </listitem>
     </varlistentry>

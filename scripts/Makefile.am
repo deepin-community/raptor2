@@ -20,14 +20,16 @@
 # 
 
 EXTRA_DIST= \
-fix-bison \
-fix-flex \
-fix-groff-xhtml \
+fix-bison.pl \
+fix-flex.pl \
+fix-groff-xhtml.pl \
 fix-gtkdoc-header.pl \
 process-changes.pl \
 rdfcompare
 
 CLEANFILES =
+
+AM_CPPFLAGS= -I$(top_srcdir)/src
 
 if MAINTAINER_MODE
 EXTRA_PROGRAMS = build-formats

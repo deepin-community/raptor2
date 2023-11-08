@@ -136,7 +136,10 @@ raptor_new_www_with_connection(raptor_world* world, void *connection)
 
 #ifdef RAPTOR_WWW_LIBCURL
   www->curl_handle = (CURL*)connection;
-  raptor_www_curl_init(www);
+  if(raptor_www_curl_init(www)) {
+    raptor_free_www(www);
+    www = NULL;
+  }
 #endif
 #ifdef RAPTOR_WWW_LIBXML
   raptor_www_libxml_init(www);
@@ -267,31 +270,92 @@ raptor_www_set_content_type_handler(raptor_www* www,
 
 
 /**
+ * raptor_www_set_user_agent2:
+ * @www: WWW object
+ * @user_agent: User-Agent string
+ * @user_agent_len: Length of @user_agent string or 0 to count it here.
+ * 
+ * Set the user agent value, for HTTP requests typically.
+ *
+ * Return value: non-0 on failure
+ **/
+int
+raptor_www_set_user_agent2(raptor_www* www, const char *user_agent,
+                           size_t user_agent_len)
+{
+  char *ua_copy = NULL;
+  
+  if(!user_agent || !*user_agent) {
+    www->user_agent = NULL;
+    return 0;
+  }
+
+  if(user_agent_len == 0)
+    user_agent_len = strlen(user_agent);
+
+  ua_copy = RAPTOR_MALLOC(char*, user_agent_len + 1);
+  if(!ua_copy)
+    return 1;
+
+  memcpy(ua_copy, user_agent, user_agent_len + 1); /* copy NUL */
+  
+  www->user_agent = ua_copy;
+
+  return 0;
+}
+
+
+/**
  * raptor_www_set_user_agent:
  * @www: WWW object
  * @user_agent: User-Agent string
  * 
  * Set the user agent value, for HTTP requests typically.
+ *
+ * @Deprecated: use raptor_www_set_user_agent2() which takes a length
+ * parameter and returns a value to singify failure.
+ * 
  **/
 void
 raptor_www_set_user_agent(raptor_www* www, const char *user_agent)
 {
-  char *ua_copy = NULL;
-  size_t ua_len;
-  
-  if(!user_agent || !*user_agent) {
-    www->user_agent = NULL;
-    return;
-  }
-  
-  ua_len = strlen(user_agent);
-  ua_copy = RAPTOR_MALLOC(char*, ua_len + 1);
-  if(!ua_copy)
-    return;
+  (void)raptor_www_set_user_agent2(www, user_agent, 0);
+}
 
-  memcpy(ua_copy, user_agent, ua_len + 1); /* copy NUL */
+
+/**
+ * raptor_www_set_proxy2:
+ * @www: WWW object
+ * @proxy: proxy string.
+ * @proxy_len: Length of @proxy string or 0 to count it here.
+ * 
+ * Set the proxy for the WWW object.
+ *
+ * The @proxy usually a string of the form http://server.domain:port.
+ *
+ * Return value: non-0 on failure
+ **/
+int
+raptor_www_set_proxy2(raptor_www* www, const char *proxy,
+                      size_t proxy_len)
+{
+  char *proxy_copy;
   
-  www->user_agent = ua_copy;
+  if(!proxy)
+    return 1;
+
+  if(proxy_len == 0)
+    proxy_len = strlen(proxy);
+
+  proxy_copy = RAPTOR_MALLOC(char*, proxy_len + 1);
+  if(!proxy_copy)
+    return 1;
+
+  memcpy(proxy_copy, proxy, proxy_len + 1); /* copy NUL */
+  
+  www->proxy = proxy_copy;
+
+  return 0;
 }
 
 
@@ -303,24 +367,64 @@ raptor_www_set_user_agent(raptor_www* www, const char *user_agent)
  * Set the proxy for the WWW object.
  *
  * The @proxy usually a string of the form http://server.domain:port.
+ *
+ * @Deprecated: use raptor_www_set_proxy2() which takes an length
+ * parameter and returns a value to singify failure.
+ * 
  **/
 void
 raptor_www_set_proxy(raptor_www* www, const char *proxy)
 {
-  char *proxy_copy;
-  size_t proxy_len;
-  
-  if(!proxy)
-    return;
+  (void)raptor_www_set_proxy2(www, proxy, 0);
+}
 
-  proxy_len = strlen(proxy);
-  proxy_copy = RAPTOR_MALLOC(char*, proxy_len + 1);
-  if(!proxy_copy)
-    return;
 
-  memcpy(proxy_copy, proxy, proxy_len + 1); /* copy NUL */
+/**
+ * raptor_www_set_http_accept2:
+ * @www: #raptor_www class
+ * @value: Accept: header value or NULL to have an empty one.
+ * @value_len: Length of @value string or 0 to count it here.
+ *
+ * Set HTTP Accept header.
+ * 
+ * Return value: non-0 on failure
+ **/
+int
+raptor_www_set_http_accept2(raptor_www* www, const char *value,
+                            size_t value_len)
+{
+  char *value_copy;
+  size_t len = 8; /* strlen("Accept:")+1 */
   
-  www->proxy = proxy_copy;
+  if(value) {
+    if (value_len == 0)
+      value_len = strlen(value);
+    len += 1 + value_len; /* " "+value */
+  }
+  
+  value_copy = RAPTOR_MALLOC(char*, len);
+  if(!value_copy)
+    return 1;
+  www->http_accept = value_copy;
+
+  /* copy header name */
+  memcpy(value_copy, "Accept:", 7); /* Do not copy NUL */
+  value_copy += 7;
+
+  /* copy header value */
+  if(value) {
+    *value_copy++ = ' ';
+    memcpy(value_copy, value, value_len + 1); /* Copy NUL */
+  } else {
+    /* Ensure value is NUL terminated */
+    *value_copy = '\0';
+  }
+
+#if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
+  RAPTOR_DEBUG2("Using Accept header: '%s'\n", www->http_accept);
+#endif
+
+  return 0;
 }
 
 
@@ -331,40 +435,14 @@ raptor_www_set_proxy(raptor_www* www, const char *proxy)
  *
  * Set HTTP Accept header.
  * 
+ * @Deprecated: use raptor_www_set_http_accept2() which takes an
+ * length parameter and returns a value to singify failure.
+ * 
  **/
 void
 raptor_www_set_http_accept(raptor_www* www, const char *value)
 {
-  char *value_copy;
-  size_t len = 8; /* strlen("Accept:")+1 */
-  size_t value_len = 0;
-  
-  if(value) {
-    value_len = strlen(value);
-    len += 1 + value_len; /* " "+value */
-  }
-  
-  value_copy = RAPTOR_MALLOC(char*, len);
-  if(!value_copy)
-    return;
-  www->http_accept = value_copy;
-
-  /* copy header name */
-  memcpy(value_copy, "Accept:", 7); /* Do not copy NUL */
-  value_copy += 7;
-
-  /* copy header value */
-  if(value) {
-    *value_copy ++= ' ';
-    memcpy(value_copy, value, value_len + 1); /* Copy NUL */
-  } else {
-    /* Ensure value is NUL terminated */
-    *value_copy = '\0';
-  }
-
-#if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
-  RAPTOR_DEBUG2("Using Accept header: '%s'\n", www->http_accept);
-#endif
+  (void)raptor_www_set_http_accept2(www, value, 0);
 }
 
 
@@ -403,7 +481,7 @@ raptor_www_set_http_cache_control(raptor_www* www, const char* cache_control)
   size_t len;
   size_t cc_len;
 
-  RAPTOR_ASSERT((strlen(header) != header_len), "Cache-Control header length is wrong");
+  RAPTOR_ASSERT_RETURN((strlen(header) != header_len), "Cache-Control header length is wrong", 1);
 
   if(www->cache_control) {
     RAPTOR_FREE(char*, www->cache_control);
@@ -531,23 +609,13 @@ raptor_www_set_ssl_verify_options(raptor_www* www, int verify_peer,
 void*
 raptor_www_get_connection(raptor_www* www) 
 {
-#ifdef RAPTOR_WWW_NONE
-  return NULL;
-#endif
-
-#ifdef RAPTOR_WWW_LIBCURL
+#if defined(RAPTOR_WWW_LIBCURL)
   return www->curl_handle;
-#endif
-
-#ifdef RAPTOR_WWW_LIBXML
+#elif defined(RAPTOR_WWW_LIBXML)
   return www->ctxt;
-#endif
-
-#ifdef RAPTOR_WWW_LIBFETCH
+#else
   return NULL;
 #endif
-
-  return NULL;
 }
 
 

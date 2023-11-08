@@ -12,7 +12,7 @@
 The following sections describe the changes in the API between
 versions including additions, deletions, renames (retaining the same
 number of parameters, types and return value type) and more complex
-changes to functions, types and enums.
+changes to functions, types, enums and constants.
 </para>
 
 </section>
@@ -20,7 +20,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 1.4.21 and 2.0.0</title>
 
 <section id="raptor2-changes-new-1-4-21-to-2-0-0">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -97,7 +97,7 @@ changes to functions, types and enums.
     <listitem><para><link linkend="raptor-type-q"><type>raptor_type_q</type></link> </para></listitem>
   </itemizedlist>
   <itemizedlist>
-    <title>Enums</title>
+    <title>Enums and Constants</title>
     <listitem><para><link linkend="RAPTOR-DOMAIN-IOSTREAM:CAPS"><literal>RAPTOR_DOMAIN_IOSTREAM</literal></link> </para></listitem>
     <listitem><para><link linkend="RAPTOR-DOMAIN-LAST:CAPS"><literal>RAPTOR_DOMAIN_LAST</literal></link> </para></listitem>
     <listitem><para><link linkend="RAPTOR-DOMAIN-NAMESPACE:CAPS"><literal>RAPTOR_DOMAIN_NAMESPACE</literal></link> </para></listitem>
@@ -128,7 +128,7 @@ changes to functions, types and enums.
 
 </section>
 <section id="raptor2-changes-deleted-1-4-21-to-2-0-0">
-<title>Deleted functions, types and enums</title>
+<title>Deleted functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -196,7 +196,7 @@ changes to functions, types and enums.
     <listitem><para>raptor_uri_source - URI source was useless.</para></listitem>
   </itemizedlist>
   <itemizedlist>
-    <title>Enums</title>
+    <title>Enums and Constants</title>
     <listitem><para>RAPTOR_FEATURE_ASSUME_IS_RDF - Never used.</para></listitem>
     <listitem><para>RAPTOR_FEATURE_START_URI - Never used.</para></listitem>
     <listitem><para>RAPTOR_GENID_TYPE_BAGID - There is just one type of generated ID now.</para></listitem>
@@ -214,7 +214,7 @@ changes to functions, types and enums.
 
 </section>
 <section id="raptor2-changes-renamed-1-4-21-to-2-0-0">
-<title>Renamed function and enums</title>
+<title>Renamed functions, enums and constants</title>
 
 <table border='1'>
   <thead>
@@ -352,8 +352,8 @@ changes to functions, types and enums.
   </thead>
   <tbody>
     <tr>
-      <th>1.4.21 enum</th>
-      <th>2.0.0 enum</th>
+      <th>1.4.21 enum / constant</th>
+      <th>2.0.0 enum / constant</th>
       <th>Notes</th>
     </tr>
     <tr valign='top'>
@@ -948,7 +948,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.3 and 2.0.4</title>
 
 <section id="raptor2-changes-new-2-0-3-to-2-0-4">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -963,7 +963,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.4 and 2.0.5</title>
 
 <section id="raptor2-changes-new-2-0-4-to-2-0-5">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -981,7 +981,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.5 and 2.0.6</title>
 
 <section id="raptor2-changes-new-2-0-5-to-2-0-6">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -997,7 +997,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.6 and 2.0.7</title>
 
 <section id="raptor2-changes-new-2-0-6-to-2-0-7">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -1009,7 +1009,7 @@ changes to functions, types and enums.
     <listitem><para>int <link linkend="raptor-www-set-ssl-verify-options"><function>raptor_www_set_ssl_verify_options</function></link>(raptor_www* www, int verify_peer, int verify_host) </para></listitem>
   </itemizedlist>
   <itemizedlist>
-    <title>Enums</title>
+    <title>Enums and Constants</title>
     <listitem><para><link linkend="RAPTOR-OPTION-LOAD-EXTERNAL-ENTITIES:CAPS"><literal>RAPTOR_OPTION_LOAD_EXTERNAL_ENTITIES</literal></link> </para></listitem>
     <listitem><para><link linkend="RAPTOR-OPTION-NO-FILE:CAPS"><literal>RAPTOR_OPTION_NO_FILE</literal></link> </para></listitem>
     <listitem><para><link linkend="RAPTOR-OPTION-WWW-SSL-VERIFY-HOST:CAPS"><literal>RAPTOR_OPTION_WWW_SSL_VERIFY_HOST</literal></link> </para></listitem>
@@ -1023,7 +1023,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.7 and 2.0.8</title>
 
 <section id="raptor2-changes-new-2-0-7-to-2-0-8">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -1043,7 +1043,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.9 and 2.0.10</title>
 
 <section id="raptor2-changes-new-2-0-9-to-2-0-10">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -1063,7 +1063,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.10 and 2.0.11</title>
 
 <section id="raptor2-changes-new-2-0-10-to-2-0-11">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -1078,7 +1078,7 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.11 and 2.0.12</title>
 
 <section id="raptor2-changes-new-2-0-11-to-2-0-12">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
@@ -1092,11 +1092,64 @@ changes to functions, types and enums.
 <title>Changes between raptor2 2.0.13 and 2.0.14</title>
 
 <section id="raptor2-changes-new-2-0-13-to-2-0-14">
-<title>New functions, types and enums</title>
+<title>New functions, types, enums and constants</title>
 
   <itemizedlist>
     <title>Functions</title>
     <listitem><para>unsigned char* <link linkend="raptor-uri-counted-filename-to-uri-string"><function>raptor_uri_counted_filename_to_uri_string</function></link>(const char *filename, size_t filename_len) </para></listitem>
+  </itemizedlist>
+
+</section>
+
+</section>
+<section id="raptor2-changes-2-0-14-to-2-0-15">
+<title>Changes between raptor2 2.0.14 and 2.0.15</title>
+
+<section id="raptor2-changes-new-2-0-14-to-2-0-15">
+<title>New functions, types, enums and constants</title>
+
+  <itemizedlist>
+    <title>Functions</title>
+    <listitem><para>void <link linkend="raptor-sequence-sort-r"><function>raptor_sequence_sort_r</function></link>(raptor_sequence* seq, raptor_data_compare_arg_handler compare, void* user_data) - Uses <link linkend="raptor-sort-r"><function>raptor_sort_r</function></link>() internally.</para></listitem>
+    <listitem><para>void <link linkend="raptor-sort-r"><function>raptor_sort_r</function></link>(void *base, size_t nel, size_t width, raptor_data_compare_arg_handler compar, void *user_data) </para></listitem>
+    <listitem><para>int <link linkend="raptor-world-get-parsers-count"><function>raptor_world_get_parsers_count</function></link>(raptor_world* world) </para></listitem>
+    <listitem><para>int <link linkend="raptor-world-get-serializers-count"><function>raptor_world_get_serializers_count</function></link>(raptor_world* world) </para></listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>Types</title>
+    <listitem><para><link linkend="raptor-data-compare-arg-handler"><type>raptor_data_compare_arg_handler</type></link> - Used by <link linkend="raptor-sort-r"><function>raptor_sort_r</function></link>()</para></listitem>
+  </itemizedlist>
+
+</section>
+
+</section>
+<section id="raptor2-changes-2-0-15-to-2-0-16">
+<title>Changes between raptor2 2.0.15 and 2.0.16</title>
+
+<section id="raptor2-changes-new-2-0-15-to-2-0-16">
+<title>New functions, types, enums and constants</title>
+
+  <itemizedlist>
+    <title>Functions</title>
+    <listitem><para>void <link linkend="raptor-avltree-trim"><function>raptor_avltree_trim</function></link>(raptor_avltree* tree) </para></listitem>
+    <listitem><para>int <link linkend="raptor-www-set-http-accept2"><function>raptor_www_set_http_accept2</function></link>(raptor_www *www, const char *value, size_t value_len) </para></listitem>
+    <listitem><para>int <link linkend="raptor-www-set-proxy2"><function>raptor_www_set_proxy2</function></link>(raptor_www *www, const char *proxy, size_t proxy_len) </para></listitem>
+    <listitem><para>int <link linkend="raptor-www-set-user-agent2"><function>raptor_www_set_user_agent2</function></link>(raptor_www *www, const char *user_agent, size_t user_agent_len) </para></listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>Enums and Constants</title>
+    <listitem><para><link linkend="raptor-rdf-schema-namespace-uri-len"><literal>raptor_rdf_schema_namespace_uri_len</literal></link> </para></listitem>
+  </itemizedlist>
+
+</section>
+<section id="raptor2-changes-deleted-2-0-15-to-2-0-16">
+<title>Deleted functions, types, enums and constants</title>
+
+  <itemizedlist>
+    <title>Functions</title>
+    <listitem><para>raptor_www_set_http_accept - Deprecated for raptor_www_set_http_accept2</para></listitem>
+    <listitem><para>raptor_www_set_proxy - Deprecated for raptor_www_set_proxy2</para></listitem>
+    <listitem><para>raptor_www_set_user_agent - Deprecated for raptor_www_set_user_agent2</para></listitem>
   </itemizedlist>
 
 </section>

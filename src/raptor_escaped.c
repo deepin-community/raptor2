@@ -44,7 +44,7 @@
  *
  * Write a UTF-8 string formatted using different escapes to a #raptor_iostream
  *
- * Supports writing escapes in the Python, N-Triples, Turtle, JSON,
+ * Supports writing escapes in the Python, N-Triples, Turtle, JSON, mKR,
  * SPARQL styles to an iostream.
  * 
  * Return value: non-0 on failure such as bad UTF-8 encoding.
@@ -163,7 +163,7 @@ raptor_string_escaped_write(const unsigned char *string,
  * @mode: mode 0=N-Triples mode, 1=Turtle (allow raw UTF-8), 2=Turtle long string (allow raw UTF-8), 3=JSON
  * @iostr: #raptor_iostream to write to
  *
- * Write a UTF-8 string using Python-style escapes (N-Triples, Turtle, JSON) to a #raptor_iostream
+ * Write a UTF-8 string using Python-style escapes (N-Triples, Turtle, JSON, mKR) to a #raptor_iostream
  *
  * @Deprecated: use raptor_string_escaped_write() where the features
  * requested are bits that can be individually chosen.
@@ -280,7 +280,7 @@ raptor_term_escaped_write(const raptor_term *term,
     case RAPTOR_TERM_TYPE_UNKNOWN:
     default:
       raptor_log_error_formatted(term->world, RAPTOR_LOG_LEVEL_ERROR, NULL,
-                                 "Triple has unsupported term type %d", 
+                                 "Triple has unsupported term type %u",
                                  term->type);
       return 1;
   }

@@ -87,14 +87,16 @@ raptor_ntriples_term_valid(unsigned char c, int position,
       break;
 
     case RAPTOR_TERM_CLASS_LANGUAGE:
-      /* ends on first non [a-zA-Z]+ ('-' [a-zA-Z0-9]+ )? */
+      /* ends on first non [a-zA-Z]+ ('-' [a-zA-Z0-9]+ )?
+       * Accept _ as synonym / typo for -.
+       */
       result = IS_ASCII_ALPHA(c);
       if(position)
-        result = (result || IS_ASCII_DIGIT(c) || c == '-');
+        result = (result || IS_ASCII_DIGIT(c) || c == '-' || c == '_');
       break;
 
     default:
-      RAPTOR_DEBUG2("Unknown N-Triples term class %d", term_class);
+      RAPTOR_DEBUG2("Unknown N-Triples term class %u", term_class);
   }
 
   return result;
@@ -124,6 +126,8 @@ raptor_ntriples_term_valid(unsigned char c, int position,
  * warning.  See the grammar for full details of the allowed ranges.
  *
  * UTF-8 and the \u and \U esapes are both allowed.
+ *
+ * URIs may not have \t \b \n \r \f or raw ' ' or \u0020 or \u003C or \u003E
  *
  * Return value: Non 0 on failure
  **/
@@ -156,12 +160,21 @@ raptor_ntriples_parse_term_internal(raptor_world* world,
       locator->byte++;
     }
 
+    if(term_class == RAPTOR_TERM_CLASS_URI && c == ' ') {
+      raptor_log_error_formatted(world, RAPTOR_LOG_LEVEL_ERROR, locator,
+                                 "URI error - illegal character %d (0x%02X) found.",
+                                 c, RAPTOR_GOOD_CAST(unsigned int, c));
+      return 1;
+    }
+
     if(c > 0x7f) {
       /* just copy the UTF-8 bytes through */
       int unichar_len;
       unichar_len = raptor_unicode_utf8_string_get_char(p - 1, 1 + *lenp, NULL);
       if(unichar_len < 0 || RAPTOR_GOOD_CAST(size_t, unichar_len) > *lenp) {
-        raptor_log_error_formatted(world, RAPTOR_LOG_LEVEL_ERROR, locator, "UTF-8 encoding error at character %d (0x%02X) found.", c, c);
+        raptor_log_error_formatted(world, RAPTOR_LOG_LEVEL_ERROR, locator,
+                                   "UTF-8 encoding error at character %d (0x%02X) found.",
+                                   c, RAPTOR_GOOD_CAST(unsigned int, c));
         /* UTF-8 encoding had an error or ended in the middle of a string */
         return 1;
       }
@@ -240,19 +253,25 @@ raptor_ntriples_parse_term_internal(raptor_world* world,
         *dest++ = c;
         break;
       case 'b':
-        *dest++ = '\b';
-        break;
       case 'f':
-        *dest++ = '\f';
-        break;
       case 'n':
-        *dest++ = '\n';
-        break;
       case 'r':
-        *dest++ = '\r';
-        break;
       case 't':
-        *dest++ = '\t';
+        if(term_class == RAPTOR_TERM_CLASS_URI) {
+          raptor_log_error_formatted(world, RAPTOR_LOG_LEVEL_ERROR, locator, "URI error - illegal URI escape '\\%c'.", c);
+          return 1;
+        }
+
+        if(c == 'b')
+          *dest++ = '\b';
+        else if(c == 'f')
+          *dest++ = '\f';
+        else if(c == 'n')
+          *dest++ = '\n';
+        else if(c == 'r')
+          *dest++ = '\r';
+        else /* 't' */
+          *dest++ = '\t';
         break;
       case '<':
       case '>':
@@ -303,6 +322,12 @@ raptor_ntriples_parse_term_internal(raptor_world* world,
         if(locator) {
           locator->column += RAPTOR_GOOD_CAST(int, ulen);
           locator->byte += RAPTOR_GOOD_CAST(int, ulen);
+        }
+
+        if(term_class == RAPTOR_TERM_CLASS_URI &&
+           (unichar == 0x0020 || unichar == 0x003C || unichar == 0x003E)) {
+          raptor_log_error_formatted(world, RAPTOR_LOG_LEVEL_ERROR, locator, "URI error - illegal Unicode escape \\u%04lX in URI.", unichar);
+          break;
         }
 
         if(unichar > raptor_unicode_max_codepoint) {
@@ -457,11 +482,6 @@ raptor_ntriples_parse_term(raptor_world* world, raptor_locator* locator,
         goto fail;
       }
 
-      if(!raptor_turtle_check_uri_string(dest)) {
-        raptor_log_error_formatted(world, RAPTOR_LOG_LEVEL_ERROR, locator, "URI '%s' contains bad character(s)", dest);
-        goto fail;
-      }
-
       if(1) {
         raptor_uri *uri;
 
@@ -575,10 +595,13 @@ raptor_ntriples_parse_term(raptor_world* world, raptor_locator* locator,
 
           /* Normalize language to lowercase
            * http://www.w3.org/TR/rdf-concepts/#dfn-language-identifier
+           * Also convert _ to - as synonym / typo.
            */
           for(q = object_literal_language; *q; q++) {
             if(IS_ASCII_UPPER(*q))
-              *q = TO_ASCII_LOWER(*q);
+              *q = RAPTOR_GOOD_CAST(unsigned char, TO_ASCII_LOWER(*q));
+            if(*q == '_')
+              *q = '-';
           }
 
         }
@@ -640,6 +663,8 @@ raptor_ntriples_parse_term(raptor_world* world, raptor_locator* locator,
                                                dest,
                                                datatype_uri,
                                                object_literal_language);
+        if(datatype_uri)
+          raptor_free_uri(datatype_uri);
       }
 
       break;

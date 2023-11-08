@@ -7,11 +7,11 @@
 
 1. The GNU Lesser General Public License (LGPL) Version 2.1 or any newer version
 
-   See http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html or
+   See https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html or
    COPYING.LIB for the full LGPL 2.1 license text.
      __________________________________________________________________
 
-     Copyright (C) 2000-2014 David Beckett
+     Copyright (C) 2000-2023 Dave Beckett
      Copyright (C) 2000-2005 University of Bristol. All Rights Reserved.
 
      This package is free software; you can redistribute it and/or modify
@@ -40,17 +40,17 @@
 
 3. The Apache License V2.0 or any newer version
 
-   See http://www.apache.org/licenses/LICENSE-2.0 or LICENSE-2.0.txt for
+   See https://www.apache.org/licenses/LICENSE-2.0 or LICENSE-2.0.txt for
    the full ASL 2.0 license text.
 
-     Copyright (C) 2000-2014 David Beckett
+     Copyright (C) 2000-2023 Dave Beckett
      Copyright (C) 2000-2005 University of Bristol.
 
      Licensed under the Apache License, Version 2.0 (the "License"); you
      may not use this file except in compliance with the License. You may
      obtain a copy of the License at:
 
-     http://www.apache.org/licenses/LICENSE-2.0
+     https://www.apache.org/licenses/LICENSE-2.0
 
      Unless required by applicable law or agreed to in writing, software
      distributed under the License is distributed on an "AS IS" BASIS,
@@ -62,5 +62,5 @@
    section 4(d) of the Apache License, Version 2.0.
      __________________________________________________________________
 
-   Copyright (C) 2000-2014 David Beckett
+   Copyright (C) 2000-2023 Dave Beckett
    Copyright (C) 2000-2005 University of Bristol

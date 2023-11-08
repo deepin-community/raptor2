@@ -3,10 +3,10 @@ dnl
 dnl configure.ac - autoconf file for Raptor
 dnl (Process this file with autoconf to produce a configure script.)
 dnl
-dnl Copyright (C) 2000-2011 David Beckett http://www.dajobe.org/
-dnl Copyright (C) 2000-2005 University of Bristol, UK http://www.bristol.ac.uk/
+dnl Copyright (C) 2000-2023 David Beckett https://www.dajobe.org/
+dnl Copyright (C) 2000-2005 University of Bristol, UK https://www.bristol.ac.uk/
 dnl 
-dnl This package is Free Software and part of Redland http://librdf.org/
+dnl This package is Free Software and part of Redland https://librdf.org/
 dnl 
 dnl It is licensed under the following three licenses as alternatives:
 dnl   1. GNU Lesser General Public License (LGPL) V2.1 or any newer version
@@ -24,7 +24,7 @@ dnl
 
 
 AC_PREREQ([2.62])
-AC_INIT([Raptor RDF Parser and Serializer library], [2.0.14], [http://bugs.librdf.org/], [raptor2])
+AC_INIT([Raptor RDF Parser and Serializer library], [2.0.16], [https://bugs.librdf.org/], [raptor2])
 AC_CONFIG_SRCDIR([src/raptor_general.c])
 AC_CONFIG_HEADERS([src/raptor_config.h])
 AC_CONFIG_AUX_DIR(build)
@@ -90,13 +90,13 @@ FLEX_MIN_VERSION=2.5.19
 FLEX_REC_VERSION=2.5.36
 
 # Do not want AM_PROG_LEX which adds 'missing' to LEX if it's not around
-AC_PROG_LEX
+AC_PROG_LEX(noyywrap)
 AC_MSG_CHECKING(flex)
 if test "$USE_MAINTAINER_MODE" = yes; then
   # maintainer mode - flex is required
   if test "X$LEX" = "X:" ; then
     AC_MSG_RESULT(not present)
-    AC_MSG_WARN(Please get flex from http://flex.sourceforge.net/)
+    AC_MSG_WARN(Please get flex from https://github.com/westes/flex)
     AC_MSG_WARN(version $FLEX_MIN_VERSION ($FLEX_REC_VERSION recommended))
     AC_MSG_FAILURE(flex not present)
   fi
@@ -113,13 +113,13 @@ if test "$USE_MAINTAINER_MODE" = yes; then
       AC_MSG_RESULT($FLEX_VERSION - OK)
     else
       AC_MSG_RESULT(version $FLEX_VERSION - too old)
-      AC_MSG_WARN(Please get flex from http://flex.sourceforge.net/)
+      AC_MSG_WARN(Please get flex from https://github.com/westes/flex)
       AC_MSG_WARN(version $FLEX_MIN_VERSION ($FLEX_REC_VERSION recommended))
       AC_MSG_FAILURE(flex is too old)
     fi
   else
     AC_MSG_RESULT(present - but is not flex)
-    AC_MSG_WARN(Please get flex from http://flex.sourceforge.net/)
+    AC_MSG_WARN(Please get flex from https://github.com/westes/flex)
     AC_MSG_WARN(version $FLEX_MIN_VERSION ($FLEX_REC_VERSION recommended))
     AC_MSG_FAILURE($LEX is not not flex)
   fi
@@ -134,35 +134,27 @@ fi
 AC_DEFINE_UNQUOTED(FLEX_VERSION_DECIMAL, $FLEX_VERSION_DEC, [Flex version as a decimal])
 
 
-BISON_MIN_VERSION=3.0.0
-AC_CHECK_PROGS(BISON, bison3 bison)
+BISON_MIN_VERSION=3.4.0
+BISON_REC_VERSION=3.7.2
+BISON_MIN_VERSION_DEC=`echo $BISON_MIN_VERSION | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
+
 if test "$USE_MAINTAINER_MODE" = yes; then
-  AC_MSG_CHECKING(for GNU bison)
   # Match these styles of versions
   # GNU Bison version 1.28
   # bison (GNU Bison) 1.875
-dnl need to change quotes to allow square brackets
-changequote(<<, >>)dnl
-  BISON_VERSION=`$BISON --version 2>&1 | sed -ne 's/^.*GNU Bison[^0-9]*//p'`
-changequote([, ])dnl
-  if test "X$BISON_VERSION" != X; then
-    BISON_VERSION_DEC=`echo $BISON_VERSION | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
-
-    BISON_MIN_VERSION_DEC=`echo $BISON_MIN_VERSION | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
-
-    if test $BISON_VERSION_DEC -ge $BISON_MIN_VERSION_DEC; then
-      AC_MSG_RESULT($BISON_VERSION - OK)
-    else
-      AC_MSG_RESULT(version $BISON_VERSION is too old)
-      AC_MSG_WARN(Please get GNU Bison from http://www.gnu.org/software/bison/)
-      AC_MSG_WARN(version $BISON_MIN_VERSION or newer)
-      AC_MSG_FAILURE(GNU Bison too old)
-    fi
-  else
-    AC_MSG_FAILURE($BISON is not GNU bison)
-  fi
+  AC_CACHE_CHECK([for GNU bison newer than $BISON_MIN_VERSION], [ac_cv_path_BISON],
+    [AC_PATH_PROGS_FEATURE_CHECK([BISON], [bison3 bison],
+      [[bison_version=`$ac_path_BISON --version 2>&1 | sed -ne 's/^.*GNU Bison[^0-9]*//p'`
+        bison_version_dec=`echo $bison_version | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
+       test "$bison_version_dec" -ge $BISON_MIN_VERSION_DEC \
+	&& ac_cv_path_BISON=$ac_path_BISON ac_cv_version_BISON=$bison_version ac_cv_version_dec_BISON=$bison_version_dec]],
+      [AC_MSG_ERROR([could not find new enough GNU Bison])])])
+  AC_MSG_NOTICE([Using GNU Bison $ac_cv_version_BISON ($ac_cv_version_dec_BISON) at $ac_cv_path_BISON])
+else
+  # not maintainer mode, do not need bison
+  ac_cv_path_BISON=:
 fi
-AC_SUBST(BISON)
+AC_SUBST([BISON], [$ac_cv_path_BISON])
 
 # Find a tar command for 'make dist'
 AC_CHECK_PROGS(TAR, gnutar gtar tar)
@@ -198,14 +190,19 @@ dnl compiler checks
 
 AC_DEFUN([REDLAND_CC_TRY_FLAG], [
   AC_MSG_CHECKING([whether $CC supports $1])
+
+  ## backup CFLAGS and werror status
   redland_save_CFLAGS="$CFLAGS"
-  if test $CC_IS_CLANG = yes; then
-    # Make unknown warnings into errors for clang so the test below works
-    CFLAGS="-Werror $CFLAGS"
-  fi
+  redland_save_ac_c_werror_flag="${ac_c_werror_flag}"
+  AC_LANG_WERROR
+
   CFLAGS="$CFLAGS $1"
   AC_COMPILE_IFELSE([AC_LANG_SOURCE([ ])], [redland_cc_flag=yes], [redland_cc_flag=no])
+
+  ## restore CFLAGS and werror status
   CFLAGS="$redland_save_CFLAGS"
+  ac_c_werror_flag="${redland_save_ac_c_werror_flag}"
+
   if test "X$redland_cc_flag" = "Xyes"; then
     ifelse([$2], , :, [$2])
   else
@@ -215,21 +212,18 @@ AC_DEFUN([REDLAND_CC_TRY_FLAG], [
 ])
 
 # GCC warning options
-# http://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+# https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 #
 # Too noisy:
-#  -Wconversion
-#  -Wformat-nonliteral : variables for format strings
 #  -Wmissing-field-initializers : too noisy in raptor_rss_common.c
 #  -Wsystem-headers   : not debugging system
-#  -Wsign-conversion: : many int / unsigned int / size_t
 #  -Wunused-parameter : variables can be marked  __attribute__('unused')
-#
-# Apple gcc specific (probably): -Wshorten-64-to-32
 possible_warnings="\
+-std=c11 \
 -Wall \
 -Wc++-compat \
 -Wextra \
+-Wpedantic \
 -Wunused \
 \
 -Waggregate-return \
@@ -241,7 +235,7 @@ possible_warnings="\
 -Wendif-labels \
 -Werror-implicit-function-declaration \
 -Wfloat-equal \
--Wformat-security \
+-Wformat=2 \
 -Wframe-larger-than=4096 \
 -Winit-self \
 -Winline \
@@ -256,22 +250,52 @@ possible_warnings="\
 -Wredundant-decls \
 -Wshadow \
 -Wsign-compare \
+-Wstrict-overflow \
 -Wstrict-prototypes \
 -Wswitch-enum \
--Wundef \
 -Wunreachable-code \
 -Wunsafe-loop-optimizations \
 -Wwrite-strings \
 \
--Wshorten-64-to-32
-\
--Wno-conversion \
--Wno-format-nonliteral \
 -Wno-missing-field-initializers \
--Wno-sign-conversion \
 -Wno-system-headers \
 -Wno-unused-parameter \
+-Wswitch-bool \
+-Wlogical-not-parentheses \
+-Wsizeof-array-argument  \
+-Wbool-compare \
+-Wc90-c99-compat \
+-Wc99-c11-compat \
 "
+
+extra_compiler_cflags=""
+
+# compiler specific warnings
+if test $CC_IS_CLANG = yes; then
+    # Always enable this for Clang
+    #  -Wno-nullability-completeness : too noisy on OSX reporting
+    #     warnings in stdio.h
+    extra_compiler_cflags="$extra_compiler_cflags \
+-Wno-nullability-completeness \
+"
+fi
+
+# OS specific warnings
+case "${host_os}" in
+    darwin*)
+	# Apple gcc/clang specific:
+	#  -Wshorten-64-to-32
+	possible_warnings="$possible_warnings \
+-Wshorten-64-to-32 \
+"
+        ;;
+    *)
+	#  -Wundef : too noisy on OSX 10.12+ e.g. stdio.h fails
+	possible_warnings="$possible_warnings \
+-Wundef \
+"
+	;;
+esac
 
 warning_cflags=
 if test "$USE_MAINTAINER_MODE" = yes; then
@@ -284,14 +308,17 @@ if test "$USE_MAINTAINER_MODE" = yes; then
   AC_MSG_RESULT($warning_cflags)
 fi
 
-MAINTAINER_CPPFLAGS="$warning_cflags"
+if test "$USE_MAINTAINER_MODE" = yes; then
+  AC_DEFINE([MAINTAINER_MODE], [1], [Define to 1 if maintainer mode is enabled.])
+  CPPFLAGS="$warning_cflags $CPPFLAGS"
+fi
+# Extra compiler flags to always add
+CPPFLAGS="$extra_compiler_cflags $CPPFLAGS"
 
 
 dnl Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h stdlib.h stddef.h unistd.h string.h limits.h math.h getopt.h sys/stat.h sys/param.h sys/stat.h sys/time.h setjmp.h)
+AC_CHECK_HEADERS(errno.h fcntl.h getopt.h limits.h setjmp.h stddef.h stdlib.h strings.h string.h sys/param.h sys/stat.h sys/time.h time.h unistd.h)
 AC_CHECK_FUNCS(stat)
-AC_HEADER_TIME
 dnl FreeBSD fetch.h needs stdio.h and sys/param.h first
 AC_CHECK_HEADERS(fetch.h,,,
   [#include <stdio.h>
@@ -307,9 +334,10 @@ AC_C_CONST
 AC_C_BIGENDIAN
 AC_C_INLINE
 
-AC_MSG_CHECKING(whether __func__ is available)
-AC_COMPILE_IFELSE([AC_LANG_SOURCE([int main() { printf(__func__); }])],
-    [AC_DEFINE([HAVE___FUNC__], [1], [Is __func__ available])
+AC_MSG_CHECKING(whether __FUNCTION__ is available)
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([#include <stdio.h>
+int main(void) { printf(__FUNCTION__); }])],
+    [AC_DEFINE([HAVE___FUNCTION__], [1], [Is __FUNCTION__ available])
      AC_MSG_RESULT(yes)],
     [AC_MSG_RESULT(no)])
 
@@ -384,10 +412,23 @@ AC_SUBST(RAPTOR_LIBTOOL_VERSION)
 
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS(gettimeofday getopt getopt_long stricmp strcasecmp vsnprintf isascii setjmp strtok_r)
+AC_CHECK_FUNCS(gettimeofday getopt getopt_long vsnprintf isascii setjmp qsort_r qsort_s stricmp strcasecmp)
+
+AC_MSG_CHECKING(strtok_r)
+have_strtok_r=no
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+int main(void) { return strtok_r(); }
+])],
+  [AC_MSG_RESULT(yes)
+   have_strtok_r=yes
+   AC_DEFINE([HAVE_STRTOK_R], [1], [have the strtok_r function])],
+  [AC_MSG_RESULT(no)])
 
 dnl librdfa
-AM_CONDITIONAL([NEED_STRTOK_R], [test "$ac_cv_func_strtok_r" = "no"])
+AM_CONDITIONAL([NEED_STRTOK_R], [test "$have_strtok_r" = "no"])
 
 dnl Check for GNU extension functions
 oCPPFLAGS="$CPPFLAGS"
@@ -520,6 +561,41 @@ if test "X$xslt_config" != "Xno" ; then
   fi
 fi
 
+if test "X$XSLT_CONFIG" != "X"; then
+  XSLT_CFLAGS=`$XSLT_CONFIG --cflags`
+  XSLT_LIBS=`$XSLT_CONFIG --libs`
+
+  CPPFLAGS="$XSLT_CFLAGS $CPPFLAGS"
+  LIBS="$LIBS $XSLT_LIBS"
+
+  AC_CHECK_FUNC(xsltSaveResultToString, have_xsltSaveResultToString=yes, have_xsltSaveResultToString=no)
+  AC_MSG_CHECKING(for libxslt via xslt-config)
+  if test $have_xsltSaveResultToString = yes; then
+    have_libxslt=1
+    LIBXSLT_VERSION=`$XSLT_CONFIG --version`
+    libxslt_version_dec=`echo $LIBXSLT_VERSION | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
+    libxslt_min_version_dec=`echo $libxslt_min_version | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + 3)};'`
+    AC_MSG_RESULT(yes - version $LIBXSLT_VERSION)
+    if test $libxslt_version_dec -lt $libxslt_min_version_dec; then
+       AC_MSG_WARN(Using libxslt $LIBXSLT_VERSION is unsupported - $libxslt_min_version or newer required.)
+       have_libxslt=0
+    fi
+  fi
+
+  AC_CHECK_FUNC(xsltInit)
+
+  AC_CHECK_HEADERS(libxslt/xslt.h)
+  if test "$ac_cv_header_libxslt_xslt_h" = no ; then
+    AC_MSG_WARN(libxslt library found but not headers - disabling)
+    have_libxslt_lib=0
+    have_libxslt=0
+  fi
+  CPPFLAGS="$oCPPFLAGS"
+  LIBS="$oLIBS"
+else
+  PKG_CHECK_MODULES([XSLT], [libxslt > $libxslt_min_version], [have_libxslt=1], [have_libxslt=0])
+fi
+
 dnl curl
 AC_ARG_WITH(curl-config, [  --with-curl-config=PATH   Location of libcurl curl-config []], curl_config="$withval", curl_config="")
 
@@ -570,21 +646,12 @@ else
   AC_MSG_RESULT(yes - $LIBCURL_VERSION)
 fi
 
-
-AC_ARG_WITH(icu-config, [  --with-icu-config=PATH   Location of ICU icu-config []], icu_config="$withval", icu_config="")
-
-have_icu=no
-AC_MSG_CHECKING(for ICU)
-if test "X$icu_config" != "Xno" -a "X$icu_config" != "X" ; then
-  ICU_CONFIG=$icu_config
-  ICU_VERSION=`$ICU_CONFIG --version`
+PKG_CHECK_MODULES([ICU], [icu-uc], [
   have_icu=yes
-  AC_MSG_RESULT(yes - version $ICU_VERSION)
-else
-  AC_MSG_RESULT(no)
-fi
-dnl Note there is NO automated searching for icu-config
-
+  ICU_UC_VERSION=`$PKG_CONFIG icu-uc --modversion`
+], [have_icu=no])
+ICU_UC_MAJOR_VERSION=`echo "$ICU_UC_VERSION" | sed -e 's/\..*$//'`
+AC_DEFINE_UNQUOTED(ICU_UC_MAJOR_VERSION, $ICU_UC_MAJOR_VERSION, [ICU UC major version])
 
 AC_ARG_WITH(www-config, [  --with-libwww-config=PATH Location of W3C libwww libwww-config []], libwww_config="$withval", libwww_config="")
 
@@ -597,7 +664,7 @@ have_libxml=0
 need_libxml=0
 
 oCPPFLAGS="$CPPFLAGS"
-if test "X$XML_CONFIG" != X; then
+if test "X$libxml_source" != X; then
   CPPFLAGS="$LIBXML_CFLAGS $CPPFLAGS"
   LIBS="$LIBS $LIBXML_LIBS"
   AC_CHECK_FUNC(xmlCreatePushParserCtxt, have_xmlCreatePushParserCtxt=yes, have_xmlCreatePushParserCtxt=no)
@@ -694,41 +761,6 @@ fi
 CPPFLAGS="$oCPPFLAGS"
 LIBS="$oLIBS"
 
-
-have_libxslt=0
-
-if test "X$XSLT_CONFIG" != X; then
-  CPPFLAGS="`$XSLT_CONFIG --cflags` $CPPFLAGS"
-  LIBS="$LIBS `$XSLT_CONFIG --libs`"
-  AC_CHECK_FUNC(xsltSaveResultToString, have_xsltSaveResultToString=yes, have_xsltSaveResultToString=no)
-  AC_MSG_CHECKING(for system libxslt library)
-  if test $have_xsltSaveResultToString = yes; then
-    have_libxslt=1
-    LIBXSLT_VERSION=`$XSLT_CONFIG --version`
-    libxslt_version_dec=`echo $LIBXSLT_VERSION | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
-    libxslt_min_version_dec=`echo $libxslt_min_version | $AWK -F. '{printf("%d\n", 10000*$1 + 100*$2 + $3)};'`
-    AC_MSG_RESULT(yes - version $LIBXSLT_VERSION)
-    if test $libxslt_version_dec -lt $libxslt_min_version_dec; then
-       AC_MSG_WARN(Using libxslt $LIBXSLT_VERSION is unsupported - $libxslt_min_version or newer required.)
-       have_libxslt=0
-    fi
-  else
-    AC_MSG_RESULT(no)
-  fi
-
-  AC_CHECK_FUNC(xsltInit)
-
-  AC_CHECK_HEADERS(libxslt/xslt.h)
-  if test "$ac_cv_header_libxslt_xslt_h" = no ; then
-    AC_MSG_WARN(libxslt library found but not headers - disabling)
-    have_libxslt_lib=0
-    have_libxslt=0
-  fi
-fi
-CPPFLAGS="$oCPPFLAGS"
-LIBS="$oLIBS"
-
-
 dnl Check for JSON library
 
 AC_ARG_WITH(yajl, [  --with-yajl=DIR  YAJL installation directory or 'no' to disable (default=auto)], yajl_prefix="$withval", yajl_prefix="none")
@@ -751,7 +783,7 @@ if test "x$yajl_prefix" != "xno" ; then
   fi
 
   if test "X$yajl_prefix" = "Xnone" ; then
-    AC_MSG_RESULT(not found. Get it from http://lloyd.github.com/yajl/ and use --with-yajl=DIR if necessary to configure the installation directory.)
+    AC_MSG_RESULT(not found. Get it from https://lloyd.github.com/yajl/ and use --with-yajl=DIR if necessary to configure the installation directory.)
   else
     AC_MSG_RESULT($yajl_prefix)
 
@@ -916,6 +948,7 @@ rdfxml_serializer=no
 ntriples_serializer=no
 rdfxml_abbrev_serializer=no
 turtle_serializer=no
+mkr_serializer=no
 rss_1_0_serializer=no
 atom_serializer=no
 dot_serializer=no
@@ -923,7 +956,7 @@ html_serializer=no
 json_serializer=no
 nquads_serializer=no
 
-rdf_serializers_available="rdfxml rdfxml-abbrev turtle ntriples rss-1.0 dot html json atom nquads"
+rdf_serializers_available="rdfxml rdfxml-abbrev turtle mkr ntriples rss-1.0 dot html json atom nquads"
 
 # This is needed because autoheader can't work out which computed
 # symbols must be pulled from acconfig.h into config.h.in
@@ -932,6 +965,7 @@ if test "x" = "y"; then
   AC_DEFINE(RAPTOR_SERIALIZER_NTRIPLES, 1, [Building N-Triples serializer])
   AC_DEFINE(RAPTOR_SERIALIZER_RDFXML_ABBREV, 1, [Building RDF/XML-abbreviated serializer])
   AC_DEFINE(RAPTOR_SERIALIZER_TURTLE, 1, [Building Turtle serializer])
+  AC_DEFINE(RAPTOR_SERIALIZER_MKR,    1, [Building mKR serializer])
   AC_DEFINE(RAPTOR_SERIALIZER_RSS_1_0, 1, [Building RSS 1.0 serializer])
   AC_DEFINE(RAPTOR_SERIALIZER_ATOM, 1, [Building Atom 1.0 serializer])
   AC_DEFINE(RAPTOR_SERIALIZER_DOT, 1, [Building GraphViz DOT serializer])
@@ -965,6 +999,7 @@ AM_CONDITIONAL(RAPTOR_SERIALIZER_RDFXML, test $rdfxml_serializer = yes)
 AM_CONDITIONAL(RAPTOR_SERIALIZER_NTRIPLES, test $ntriples_serializer = yes)
 AM_CONDITIONAL(RAPTOR_SERIALIZER_RDFXML_ABBREV, test $rdfxml_abbrev_serializer = yes)
 AM_CONDITIONAL(RAPTOR_SERIALIZER_TURTLE, test $turtle_serializer = yes)
+AM_CONDITIONAL(RAPTOR_SERIALIZER_MKR,    test $mkr_serializer    = yes)
 AM_CONDITIONAL(RAPTOR_SERIALIZER_RSS_1_0, test $rss_1_0_serializer = yes)
 AM_CONDITIONAL(RAPTOR_SERIALIZER_ATOM, test $atom_serializer = yes)
 AM_CONDITIONAL(RAPTOR_SERIALIZER_DOT, test $dot_serializer = yes)
@@ -1129,10 +1164,10 @@ dnl ICU for NFC check
 AC_MSG_CHECKING(NFC library to use)
 nfc_library=none
 if test $need_icu = yes; then
-  CPPFLAGS="$CPPFLAGS `$ICU_CONFIG --cppflags-searchpath`"
-  RAPTOR_LDFLAGS="$RAPTOR_LDFLAGS `$ICU_CONFIG --ldflags-searchpath` -licuuc"
+  CPPFLAGS="$CPPFLAGS $ICU_CFLAGS"
+  RAPTOR_LDFLAGS="$RAPTOR_LDFLAGS $ICU_LIBS"
   AC_LIBOBJ(raptor_nfc_icu)
-  nfc_library="ICU $ICU_VERSION"
+  nfc_library="ICU UC $ICU_UC_VERSION"
 fi
 AC_MSG_RESULT($nfc_library)
 
@@ -1208,7 +1243,7 @@ if test $need_libxml = 1; then
   if test $have_libxml = 1; then
     AC_DEFINE(RAPTOR_XML_LIBXML, 1, [Use libxml XML parser])
   else
-    AC_MSG_ERROR(libxml2 is not available - please get it from http://xmlsoft.org/)
+    AC_MSG_ERROR(libxml2 is not available - please get it from https://gitlab.gnome.org/GNOME/libxml2/-/wikis/home)
   fi
   if test $need_libxml_www = 1; then
     AC_LIBOBJ(raptor_www_libxml)
@@ -1228,8 +1263,8 @@ AM_CONDITIONAL(RAPTOR_XML_LIBXML, test $need_libxml = 1)
 
 
 if test $need_libxslt = 1; then
-  RAPTOR_LDFLAGS="$RAPTOR_LDFLAGS `$XSLT_CONFIG --libs`"
-  CPPFLAGS="`$XSLT_CONFIG --cflags` $CPPFLAGS"
+  RAPTOR_LDFLAGS="$RAPTOR_LDFLAGS $XSLT_LIBS"
+  CPPFLAGS="$CPPFLAGS $XSLT_CFLAGS"
 fi
 
 if test $need_libyajl = 1; then
@@ -1273,10 +1308,6 @@ if test "$debug_messages" = "yes"; then
   AC_DEFINE([RAPTOR_DEBUG], [1], [Define to 1 if debug messages are enabled.])
 fi
 
-if test "$USE_MAINTAINER_MODE" = yes; then
-  AC_DEFINE([MAINTAINER_MODE], [1], [Define to 1 if maintainer mode is enabled.])
-  CPPFLAGS="$MAINTAINER_CPPFLAGS $CPPFLAGS"
-fi
 
 
 AC_SUBST(RAPTOR_LDFLAGS)
@@ -1329,6 +1360,7 @@ tests/rdfa11/Makefile
 tests/json/Makefile
 tests/rdfxml/Makefile
 tests/turtle/Makefile
+tests/mkr/Makefile
 tests/turtle-2013/Makefile
 tests/trig/Makefile
 utils/Makefile

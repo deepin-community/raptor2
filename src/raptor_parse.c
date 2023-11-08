@@ -247,6 +247,25 @@ raptor_world_get_parser_factory(raptor_world *world, const char *name)
 
 
 /**
+ * raptor_world_get_parsers_count:
+ * @world: world object
+ *
+ * Get number of parsers
+ *
+ * Return value: number of parsers or <0 on failure
+ **/
+int
+raptor_world_get_parsers_count(raptor_world* world)
+{
+  RAPTOR_ASSERT_OBJECT_POINTER_RETURN_VALUE(world, raptor_world, -1);
+
+  raptor_world_open(world);
+
+  return raptor_sequence_size(world->parsers);
+}
+
+
+/**
  * raptor_world_get_parser_description:
  * @world: world object
  * @counter: index into the list of parsers
@@ -739,8 +758,10 @@ raptor_parser_parse_uri_with_connection(raptor_parser* rdf_parser,
 
     accept_h = raptor_parser_get_accept_header(rdf_parser);
     if(accept_h) {
-      raptor_www_set_http_accept(rdf_parser->www, accept_h);
+      ret = raptor_www_set_http_accept2(rdf_parser->www, accept_h, 0);
       RAPTOR_FREE(char*, accept_h);
+      if(ret)
+        return 1;
     }
   }
 
@@ -769,8 +790,10 @@ raptor_parser_parse_uri_with_connection(raptor_parser* rdf_parser,
                                                               RAPTOR_OPTION_WWW_HTTP_CACHE_CONTROL));
 
   ua = RAPTOR_OPTIONS_GET_STRING(rdf_parser, RAPTOR_OPTION_WWW_HTTP_USER_AGENT);
-  if(ua)
-    raptor_www_set_user_agent(rdf_parser->www, ua);
+  if(ua) {
+    if(raptor_www_set_user_agent2(rdf_parser->www, ua, 0))
+      return 1;
+  }
 
   cert_filename = RAPTOR_OPTIONS_GET_STRING(rdf_parser,
                                             RAPTOR_OPTION_WWW_CERT_FILENAME);
@@ -877,6 +900,38 @@ raptor_parser_log_error_varargs(raptor_parser* parser,
                              level,
                              NULL,
                              message, arguments);
+}
+
+
+/**
+ * raptor_parser_log_error:
+ * @parser: parser (or NULL)
+ * @level: log level
+ * @message: error format message
+ *
+ * Error from a parser - Internal.
+ */
+void
+raptor_parser_log_error(raptor_parser* parser,
+                        raptor_log_level level,
+                        const char *message, ...)
+{
+  va_list arguments;
+
+  va_start(arguments, message);
+
+  if(parser)
+    raptor_log_error_varargs(parser->world,
+                             level,
+                             &parser->locator,
+                             message, arguments);
+  else
+    raptor_log_error_varargs(NULL,
+                             level,
+                             NULL,
+                             message, arguments);
+
+  va_end(arguments);
 }
 
 
@@ -1333,7 +1388,7 @@ raptor_world_guess_parser_name(raptor_world* world,
                                          mime_type);
 
       if(c >= 0)
-        ((char*)buffer)[FIRSTN] = c;
+        ((char*)buffer)[FIRSTN] = RAPTOR_GOOD_CAST(char, c);
     }
 
     scores[i].score = score < 10 ? score : 10; 
@@ -1485,7 +1540,7 @@ raptor_parser_get_accept_header(raptor_parser* rdf_parser)
       *p++ = '=';
       *p++ = '0';
       *p++ = '.';
-      *p++ = '0' + (type_q->q);
+      *p++ = RAPTOR_GOOD_CAST(char, '0' + (type_q->q));
     }
     
     *p++ = ',';
@@ -1547,7 +1602,7 @@ raptor_parser_get_accept_header_all(raptor_world* world)
         *p++ = '=';
         *p++ = '0';
         *p++ = '.';
-        *p++ = '0' + (type_q->q);
+        *p++ = RAPTOR_GOOD_CAST(char, '0' + (type_q->q));
       }
       
       *p++ = ',';

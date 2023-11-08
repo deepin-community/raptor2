@@ -379,11 +379,14 @@ raptor_libxml_warning(void* user_data, const char *msg, ...)
       nmsg[length-2]='\0';
   }
   
+  PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START
   raptor_log_error_varargs(sax2->world,
                            RAPTOR_LOG_LEVEL_WARN,
                            sax2->locator, 
                            nmsg ? nmsg : msg, 
                            args);
+  PRAGMA_IGNORE_WARNING_END
+
   if(nmsg)
     RAPTOR_FREE(char*, nmsg);
   va_end(args);
@@ -401,6 +404,7 @@ raptor_libxml_error_common(void* user_data, const char *msg, va_list args,
   int msg_len;
   raptor_world* world = NULL;
   raptor_locator* locator = NULL;
+  raptor_log_level l;
 
   if(user_data) {
     /* Work around libxml2 bug - sometimes the sax2->error
@@ -431,18 +435,15 @@ raptor_libxml_error_common(void* user_data, const char *msg, va_list args,
       nmsg[length-1]='\0';
   }
 
-  if(is_fatal)
-    raptor_log_error_varargs(world,
-                             RAPTOR_LOG_LEVEL_FATAL,
-                             locator, 
-                             nmsg ? nmsg : msg, 
-                             args);
-  else
-    raptor_log_error_varargs(world,
-                             RAPTOR_LOG_LEVEL_ERROR,
-                             locator, 
-                             nmsg ? nmsg : msg, 
-                             args);
+  l = (is_fatal) ? RAPTOR_LOG_LEVEL_FATAL: RAPTOR_LOG_LEVEL_ERROR;
+
+  PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START
+  raptor_log_error_varargs(world,
+                           l,
+                           locator,
+                           nmsg ? nmsg : msg,
+                           args);
+  PRAGMA_IGNORE_WARNING_END
   
   if(nmsg)
     RAPTOR_FREE(char*, nmsg);
@@ -484,10 +485,12 @@ raptor_libxml_generic_error(void* user_data, const char *msg, ...)
       nmsg[length-1]='\0';
   }
 
+  PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START
   raptor_log_error_varargs(world, RAPTOR_LOG_LEVEL_ERROR,
                            /* locator */ NULL,
                            nmsg ? nmsg : msg, 
                            args);
+  PRAGMA_IGNORE_WARNING_END
   
   if(nmsg)
     RAPTOR_FREE(char*, nmsg);
@@ -543,11 +546,14 @@ raptor_libxml_validation_warning(void* user_data, const char *msg, ...)
       nmsg[length-2]='\0';
   }
 
+  PRAGMA_IGNORE_WARNING_FORMAT_NONLITERAL_START
   raptor_log_error_varargs(sax2->world,
                            RAPTOR_LOG_LEVEL_WARN,
                            sax2->locator, 
                            nmsg ? nmsg : msg, 
                            args);
+  PRAGMA_IGNORE_WARNING_END
+
   if(nmsg)
     RAPTOR_FREE(char*, nmsg);
   va_end(args);

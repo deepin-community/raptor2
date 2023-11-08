@@ -1,17 +1,39 @@
 Source: raptor2
 Section: devel
 Priority: optional
-Maintainer: Dave Beckett <dajobe@debian.org>
-Build-Depends: debhelper (>= 8.1.3), dh-autoreconf, cdbs (>= 0.4.93~), libtool (>= 1.5), libxml2-dev (>= 2.5.10), libcurl4-gnutls-dev, libxslt1-dev (>= 1.0.18), libyajl-dev, quilt, gtk-doc-tools
-Standards-Version: 3.9.5
-Homepage: http://librdf.org/raptor/
+Maintainer: Debian QA Group <packages@qa.debian.org>
+Build-Depends:
+ debhelper-compat (= 13),
+ gtk-doc-tools,
+ libcurl4-gnutls-dev | libcurl-ssl-dev,
+ libglib2.0-dev,
+ libicu-dev,
+ libtool,
+ libxml2-dev,
+ libxslt1-dev,
+ libyajl-dev,
+ pkg-config,
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Vcs-Git: https://salsa.debian.org/debian/raptor2.git
+Vcs-Browser: https://salsa.debian.org/debian/raptor2
+Homepage: https://librdf.org/raptor/
 
 Package: libraptor2-dev
-Suggests: libraptor2-doc
-Recommends: raptor2-utils
+Suggests:
+ libraptor2-doc,
+Recommends:
+ raptor2-utils,
 Section: libdevel
 Architecture: any
-Depends: ${misc:Depends}, libraptor2-0 (= ${binary:Version}), libxml2-dev (>= 2.5.10), libcurl4-gnutls-dev, libxslt1-dev (>= 1.0.18), pkg-config, libyajl-dev
+Multi-Arch: same
+Depends:
+ libcurl4-gnutls-dev | libcurl-ssl-dev,
+ libraptor2-0 (= ${binary:Version}),
+ libxml2-dev,
+ libxslt1-dev,
+ libyajl-dev,
+ ${misc:Depends},
 Description: Raptor 2 RDF syntax library development libraries and headers
  Raptor Resource Description Framework (RDF) parser and serializer
  development libraries, header files and documentation needed by
@@ -21,10 +43,13 @@ Package: libraptor2-0
 Section: libs
 Architecture: any
 Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Breaks: libraptor1 (<< 1.4.21-3)
-Suggests: raptor2-utils
+Pre-Depends:
+ ${misc:Pre-Depends},
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+Suggests:
+ raptor2-utils,
 Description: Raptor 2 RDF syntax library
  Raptor is a C library providing a set of parsers and serializers for
  Resource Description Framework (RDF) triples by parsing syntaxes or
@@ -42,9 +67,9 @@ Description: Raptor 2 RDF syntax library
 Package: raptor2-utils
 Section: text
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Conflicts: raptor-utils
-Replaces: raptor-utils
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
 Description: Raptor 2 RDF parser and serializer utilities
  This package provides the rapper tool for validating, parsing and
  serializing RDF/XML, N-Triples, Turtle, RSS, Atom and other Resource
@@ -53,25 +78,17 @@ Description: Raptor 2 RDF parser and serializer utilities
 Package: libraptor2-doc
 Section: doc
 Architecture: all
-Depends: ${misc:Depends}, lynx | www-browser
+Multi-Arch: foreign
+Depends:
+ lynx | www-browser,
+ ${misc:Depends},
+Breaks:
+ libraptor2-dev (<< 2.0.15-3),
+Replaces:
+ libraptor2-dev (<< 2.0.15-3),
 Description: Documentation for the Raptor 2 RDF syntax library
  Raptor is a C library providing a set of parsers and serializers for
  Resource Description Framework (RDF) triples by parsing syntaxes or
  serializing the triples into a syntax.
  .
- This package contains the HTML documentation for the Raptor library
- in /usr/share/doc/libraptor2-doc/ .
-
-Package: libraptor2-0-dbg
-Priority: extra
-Section: debug
-Architecture: any
-Multi-Arch: same
-Depends: ${misc:Depends}, libraptor2-0 (= ${binary:Version})
-Description: Raptor RDF parser and serializer library - debugging symbols
- Raptor is a C library providing a set of parsers and serializers for
- Resource Description Framework (RDF) triples by parsing syntaxes or
- serializing the triples into a syntax.
- .
- This package contains the debugging symbols for debugging
- applications which use libraptor2.
+ This package contains the HTML documentation for the Raptor 2 library.

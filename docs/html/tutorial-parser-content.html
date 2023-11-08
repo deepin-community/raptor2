@@ -2,22 +2,22 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Provide syntax content to parse</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<title>Provide syntax content to parse: Raptor RDF Syntax Library Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="Raptor RDF Syntax Library Manual">
 <link rel="up" href="tutorial-parsing.html" title="Parsing syntaxes to RDF Triples">
 <link rel="prev" href="tutorial-parse-strictness.html" title="Set the parsing strictness">
 <link rel="next" href="restrict-parser-network-access.html" title="Restrict parser network access">
-<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.33.1 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
-<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2"><tr valign="middle">
-<td><a accesskey="p" href="tutorial-parse-strictness.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="tutorial-parsing.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
-<th width="100%" align="center">Raptor RDF Syntax Library Manual</th>
-<td><a accesskey="n" href="restrict-parser-network-access.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="tutorial-parsing.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="tutorial-parse-strictness.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="restrict-parser-network-access.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
@@ -25,7 +25,7 @@
 <p>The operation of turning syntax into RDF triples has several
 alternatives from functions that do most of the work starting from a
 URI to functions that allow passing in data buffers.</p>
-<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;">
+<div class="note">
 <h3 class="title">Parsing and MIME Types</h3> 
 The mime type of the retrieved content is not used to choose
 a parser unless the parser is of type <code class="literal">guess</code>.
@@ -33,12 +33,12 @@ The guess parser will send an <code class="literal">Accept:</code> header
 for all known parser syntax mime types (if a URI request is made)
 and based on the response, including the identifiers used,
 pick the appropriate parser to execute.  See
-<a class="link" href="raptor2-section-world.html#raptor-world-guess-parser-name" title="raptor_world_guess_parser_name ()"><code class="function">raptor_world_guess_parser_name()</code></a>
+<a class="link" href="raptor2-section-world.html#raptor-world-guess-parser-name" title="raptor_world_guess_parser_name ()"><code class="function">raptor_world_guess_parser_name()</code></a>
 for a full discussion of the inputs to the guessing.
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="parse-from-uri"></a>Parse the content from a URI (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-uri" title="raptor_parser_parse_uri ()"><code class="function">raptor_parser_parse_uri()</code></a>)</h3></div></div></div>
+<a name="parse-from-uri"></a>Parse the content from a URI (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-uri" title="raptor_parser_parse_uri ()"><code class="function">raptor_parser_parse_uri()</code></a>)</h3></div></div></div>
 <p>The URI is resolved and the content read from it and passed to
 the parser:
 </p>
@@ -53,11 +53,11 @@ The <span class="emphasis"><em>base_uri</em></span> is optional (can be
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="parse-from-www"></a>Parse the content of a URI using an existing WWW connection (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-uri-with-connection" title="raptor_parser_parse_uri_with_connection ()"><code class="function">raptor_parser_parse_uri_with_connection()</code></a>)</h3></div></div></div>
+<a name="parse-from-www"></a>Parse the content of a URI using an existing WWW connection (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-uri-with-connection" title="raptor_parser_parse_uri_with_connection ()"><code class="function">raptor_parser_parse_uri_with_connection()</code></a>)</h3></div></div></div>
 <p>The URI is resolved using an existing WWW connection (for
 example a libcurl CURL handle) to allow for any existing
 WWW configuration to be reused.  See
-<a class="link" href="raptor2-section-www.html#raptor-new-www-with-connection" title="raptor_new_www_with_connection ()"><code class="function">raptor_new_www_with_connection</code></a>
+<a class="link" href="raptor2-section-www.html#raptor-new-www-with-connection" title="raptor_new_www_with_connection ()"><code class="function">raptor_new_www_with_connection</code></a>
 for full details of how this works.   The content is then read from the
 result of resolving the URI:
 </p>
@@ -72,7 +72,7 @@ The <span class="emphasis"><em>base_uri</em></span> is optional (can be
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="parse-from-filehandle"></a>Parse the content of a C <code class="literal">FILE*</code> (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-file-stream" title="raptor_parser_parse_file_stream ()"><code class="function">raptor_parser_parse_file_stream()</code></a>)</h3></div></div></div>
+<a name="parse-from-filehandle"></a>Parse the content of a C <code class="literal">FILE*</code> (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-file-stream" title="raptor_parser_parse_file_stream ()"><code class="function">raptor_parser_parse_file_stream()</code></a>)</h3></div></div></div>
 <p>Parsing can read from a C STDIO file handle:
 </p>
 <pre class="programlisting">
@@ -87,12 +87,12 @@ The <span class="emphasis"><em>base_uri</em></span> may be required by some pars
 and if <code class="literal">NULL</code> will cause the parsing to fail.
 This requirement can be checked by looking at the flags in
 the parser description using
-<a class="link" href="raptor2-section-world.html#raptor-world-get-parser-description" title="raptor_world_get_parser_description ()"><code class="function">raptor_world_get_parser_description()</code></a>.
+<a class="link" href="raptor2-section-world.html#raptor-world-get-parser-description" title="raptor_world_get_parser_description ()"><code class="function">raptor_world_get_parser_description()</code></a>.
 </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="parse-from-file-uri"></a>Parse the content of a file URI (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-file" title="raptor_parser_parse_file ()"><code class="function">raptor_parser_parse_file()</code></a>)</h3></div></div></div>
+<a name="parse-from-file-uri"></a>Parse the content of a file URI (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-file" title="raptor_parser_parse_file ()"><code class="function">raptor_parser_parse_file()</code></a>)</h3></div></div></div>
 <p>Parsing can read from a URI known to be a <code class="literal">file:</code> URI:
 </p>
 <pre class="programlisting">
@@ -109,7 +109,7 @@ and if <code class="literal">NULL</code> will cause the parsing to fail.
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h3 class="title">
-<a name="parse-from-chunks"></a>Parse chunks of syntax content provided by the application  (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-start" title="raptor_parser_parse_start ()"><code class="function">raptor_parser_parse_start()</code></a> and <a class="link" href="raptor2-section-parser.html#raptor-parser-parse-chunk" title="raptor_parser_parse_chunk ()"><code class="function">raptor_parser_parse_chunk()</code></a>)</h3></div></div></div>
+<a name="parse-from-chunks"></a>Parse chunks of syntax content provided by the application  (<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-start" title="raptor_parser_parse_start ()"><code class="function">raptor_parser_parse_start()</code></a> and <a class="link" href="raptor2-section-parser.html#raptor-parser-parse-chunk" title="raptor_parser_parse_chunk ()"><code class="function">raptor_parser_parse_chunk()</code></a>)</h3></div></div></div>
 <p>
 </p>
 <pre class="programlisting">
@@ -126,12 +126,12 @@ and if <code class="literal">NULL</code> will cause the parsing to fail.
 </pre>
 <p>
 The <span class="emphasis"><em>base_uri</em></span> argument to 
-<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-start" title="raptor_parser_parse_start ()"><code class="function">raptor_parser_parse_start()</code></a>
+<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-start" title="raptor_parser_parse_start ()"><code class="function">raptor_parser_parse_start()</code></a>
 may be required by some parsers
 and if <code class="literal">NULL</code> will cause the parsing to fail.
 </p>
 <p>On the last
-<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-chunk" title="raptor_parser_parse_chunk ()"><code class="function">raptor_parser_parse_chunk()</code></a>
+<a class="link" href="raptor2-section-parser.html#raptor-parser-parse-chunk" title="raptor_parser_parse_chunk ()"><code class="function">raptor_parser_parse_chunk()</code></a>
 call, or after the loop is ended, the <code class="literal">is_end</code>
 parameter must be set to non-0.  Content can be passed with the
 final call.  If no content is present at the end (such as in
@@ -145,7 +145,6 @@ buffer_len or NULL buffer can be used.</p>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.18</div>
+<hr>Generated by GTK-Doc V1.33.1</div>
 </body>
 </html>

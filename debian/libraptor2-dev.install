@@ -1,5 +1,4 @@
-debian/tmp/usr/include/raptor2/*.h
-debian/tmp/usr/lib/*/libraptor2.a
-debian/tmp/usr/lib/*/libraptor2.so
-debian/tmp/usr/lib/*/pkgconfig/raptor2.pc
-
+usr/include/raptor2/*.h
+usr/lib/${DEB_HOST_MULTIARCH}/libraptor2.a
+usr/lib/${DEB_HOST_MULTIARCH}/libraptor2.so
+usr/lib/${DEB_HOST_MULTIARCH}/pkgconfig/raptor2.pc

@@ -33,10 +33,10 @@ extern "C" {
 /* turtle_parser.y */
 RAPTOR_INTERNAL_API int turtle_syntax_error(raptor_parser *rdf_parser, const char *message, ...) RAPTOR_PRINTF_FORMAT(2, 3);
 RAPTOR_INTERNAL_API raptor_uri* turtle_qname_to_uri(raptor_parser *rdf_parser, unsigned char *name, size_t name_len);
-RAPTOR_INTERNAL_API size_t raptor_turtle_expand_name_escapes(unsigned char *name, size_t len, raptor_simple_message_handler error_handler, void *error_data);
+RAPTOR_INTERNAL_API size_t raptor_turtle_expand_qname_escapes(unsigned char *name, size_t len, raptor_simple_message_handler error_handler, void *error_data);
 
 /* turtle_lexer.l */
-extern void turtle_token_free(raptor_world* world, int token, YYSTYPE *lval);
+extern void turtle_token_free(raptor_world* world, int token, TURTLE_PARSER_STYPE *lval);
 
 
 /*
@@ -49,13 +49,10 @@ struct raptor_turtle_parser_s {
   /* buffer length */
   size_t buffer_length;
   
-  /* static statement for use in passing to user code */
-  raptor_statement statement;
-
   raptor_namespace_stack namespaces; /* static */
 
   /* for lexer to store result in */
-  YYSTYPE lval;
+  TURTLE_PARSER_STYPE lval;
 
   /* STATIC lexer */
   yyscan_t scanner;
@@ -63,6 +60,19 @@ struct raptor_turtle_parser_s {
   int scanner_set;
 
   int lineno;
+  int lineno_last_good;
+
+  /* for the chunk parser, how much of the input has been consumed */
+  size_t consumed;
+  /* likewise, how much of the input has been successfully processed */
+  size_t processed;
+  /* indicates what can be processed at most */
+  size_t consumable;
+  /* real end-of-buffer indicator, as we kill the last line */
+  size_t end_of_buffer;
+
+  /* a sequence holding deferred statements */
+  raptor_sequence *deferred;
 
   /* for creating long literals */
   raptor_stringbuffer* sb;
@@ -75,6 +85,9 @@ struct raptor_turtle_parser_s {
 
   /* Allow TRIG extensions */
   int trig;
+
+  /* Last run of many */
+  int is_end;
 };
 
 

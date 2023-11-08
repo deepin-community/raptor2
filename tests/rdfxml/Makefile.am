@@ -33,6 +33,7 @@ ex-34.rdf ex-35.rdf ex-36.rdf ex-37.rdf ex-38.rdf ex-39.rdf ex-40.rdf \
 ex-41.rdf ex-46.rdf ex-47.rdf ex-48.rdf ex-49.rdf ex-51.rdf \
 ex-53.rdf ex-54.rdf ex-56.rdf ex-57.rdf ex-58.rdf ex-61.rdf \
 ex-62.rdf ex-63.rdf \
+bug-650.rdf \
 22-rdf-syntax-ns.rdf rdfs-namespace.rdf rdf-schema.rdf \
 owl-schema.rdf daml-oil.rdf wine.rdf
 
@@ -64,6 +65,7 @@ ex-34.out ex-35.out ex-36.out ex-37.out ex-38.out ex-39.out ex-40.out \
 ex-41.out ex-42.out ex-43.out ex-44.out ex-45.out ex-46.out ex-47.out \
 ex-48.out ex-49.out ex-51.out ex-53.out ex-54.out ex-55.out ex-56.out \
 ex-57.out ex-58.out ex-61.out ex-61.out ex-62.out ex-63.out \
+bug-650.out \
 22-rdf-syntax-ns.out rdfs-namespace.out rdf-schema.out \
 owl-schema.out daml-oil.out wine.out
 
@@ -449,6 +451,8 @@ check-rdfxmla: build-rdfdiff build-rapper $(check_rdfxmla_deps)
 	  fi; \
 	  if test $$status1 = 0 -a $$status2 = 0; then \
 	    $(RECHO) "ok"; \
+	  elif test $$status1 = 2 -a $$status2 = 0; then \
+	    $(RECHO) "ok with warnings"; grep Warning $$name.err; \
 	  else \
 	    $(RECHO) "FAILED"; \
 	    echo $(RAPPER) -q -o rdfxml-abbrev $(srcdir)/$$test $$baseuri '>' $$name-rdfxmla.rdf; \

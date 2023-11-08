@@ -222,7 +222,7 @@ char* rdfa_resolve_uri(rdfacontext* context, const char* uri)
       char* dfence = dptr;
 
       memset(src, 0, rlen + 4);
-      strcpy(src, rval);
+      memcpy(src, rval, rlen);
       strncpy(dest, rval, hlen);
 
       /* Process the path portion of the IRI */
@@ -308,7 +308,7 @@ char* rdfa_resolve_uri(rdfacontext* context, const char* uri)
             sptr++;
 
          }
-         else if(sptr[0] == '.' && sptr[1] == '.' && sptr[1] == '\0')
+         else if(sptr[0] == '.' && sptr[1] == '.' && sptr[2] == '\0')
          {
             /* D. if the input buffer consists only of "..", then remove
              * that from the input buffer; otherwise,
@@ -329,7 +329,8 @@ char* rdfa_resolve_uri(rdfacontext* context, const char* uri)
       /* Copy the remaining query parameters */
       if(sptr[0] == '?')
       {
-         strcpy(dptr, sptr);
+         size_t rest_len = strlen(sptr);
+         memcpy(dptr, sptr, rest_len + 1);
       }
       else
       {
@@ -377,7 +378,7 @@ char* rdfa_resolve_curie(
       term_iri = (const char*)rdfa_get_mapping(context->term_mappings, uri);
       if(term_iri != NULL)
       {
-         rval = strdup(term_iri);
+         rval = rdfa_strdup(term_iri);
       }
       else if(context->default_vocabulary == NULL && strstr(uri, ":") == NULL)
       {
@@ -413,9 +414,9 @@ char* rdfa_resolve_curie(
       char* prefix = NULL;
       char* curie_reference = NULL;
       const char* expanded_prefix = NULL;
-
-      working_copy = (char*)malloc(strlen(uri) + 1);
-      strcpy(working_copy, uri);/*rdfa_replace_string(working_copy, uri);*/
+      size_t uri_len = strlen(uri);
+      working_copy = (char*)malloc(uri_len + 1);
+      memcpy(working_copy, uri, uri_len + 1);/*rdfa_replace_string(working_copy, uri);*/
 
       /* if this is a safe CURIE, chop off the beginning and the end */
       if(ctype == CURIE_TYPE_SAFE)
@@ -554,7 +555,8 @@ char* rdfa_resolve_curie(
             rval = rdfa_join_string(context->default_vocabulary, uri);
          }
          else if(((mode == CURIE_PARSE_PROPERTY) ||
-            (mode == CURIE_PARSE_ABOUT_RESOURCE)) &&
+            (mode == CURIE_PARSE_ABOUT_RESOURCE) ||
+            (mode == CURIE_PARSE_INSTANCEOF_DATATYPE)) &&
             (strstr(uri, "_:") == NULL) && (strstr(uri, "[_:") == NULL))
          {
             rval = rdfa_resolve_uri(context, uri);
@@ -603,18 +605,18 @@ char* rdfa_resolve_relrev_curie(rdfacontext* context, const char* uri)
    {
       /* search all of the XHTML @rel/@rev reserved words for a
        * case-insensitive match against the given URI */
-      char* term = strdup(resource);
+      char* term = rdfa_strdup(resource);
       char* ptr = NULL;
 
       for(ptr = term; *ptr; ptr++)
       {
-         *ptr = tolower(*ptr);
+        *ptr = RAPTOR_GOOD_CAST(char, tolower(*ptr));
       }
 
       rval = (char*)rdfa_get_mapping(context->term_mappings, term);
       if(rval != NULL)
       {
-         rval = strdup(rval);
+         rval = rdfa_strdup(rval);
       }
       free(term);
    }
@@ -624,7 +626,7 @@ char* rdfa_resolve_relrev_curie(rdfacontext* context, const char* uri)
       rval = (char*)rdfa_get_mapping(context->term_mappings, resource);
       if(rval != NULL)
       {
-         rval = strdup(rval);
+         rval = rdfa_strdup(rval);
       }
    }
 

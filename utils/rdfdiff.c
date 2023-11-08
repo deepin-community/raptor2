@@ -129,7 +129,7 @@ typedef struct {
 
 static int brief = 0;
 static char *program = NULL;
-static const char * const title_format_string="Raptor RDF diff utility %s\n";
+static const char * const title_string="Raptor RDF diff utility";
 static int ignore_errors = 0;
 static int ignore_warnings = 0;
 static int emit_from_header = 1;
@@ -179,9 +179,14 @@ rdfdiff_new_file(raptor_world *world, const unsigned char *name, const char *syn
 {
   rdfdiff_file* file = RAPTOR_CALLOC(rdfdiff_file*, 1, sizeof(*file));
   if(file) {
+    size_t name_len = strlen((const char*)name);
     file->world = world;
-    file->name = RAPTOR_MALLOC(char*, strlen((const char*)name) + 1);
-    strcpy((char*)file->name, (const char*)name);
+    file->name = RAPTOR_MALLOC(char*, name_len + 1);
+    if(!file->name) {
+      rdfdiff_free_file(file);
+      return(0);
+    }
+    memcpy(file->name, name, name_len + 1);
     
     file->parser = raptor_new_parser(world, syntax);
     if(file->parser) {
@@ -236,9 +241,15 @@ rdfdiff_new_blank(raptor_world* world, char *blank_id)
   rdfdiff_blank *blank = RAPTOR_CALLOC(rdfdiff_blank*, 1, sizeof(*blank));
 
   if(blank) {
+    size_t blank_id_len = strlen(blank_id);
     blank->world = world;
-    blank->blank_id = RAPTOR_MALLOC(char*, strlen(blank_id) + 1);
-    strcpy((char*)blank->blank_id, (const char*)blank_id);
+    blank->blank_id = RAPTOR_MALLOC(char*, blank_id_len + 1);
+    if(!blank->blank_id) {
+      rdfdiff_free_blank(blank);
+      return NULL;
+    }
+
+    memcpy(blank->blank_id, blank_id, blank_id_len + 1);
   }
   
   return blank;
@@ -784,12 +795,13 @@ main(int argc, char *argv[])
     
   }
 
-  if(optind != argc-2)
-    help = 1;
+  if(optind != argc-2 && !help && !usage) {
+    usage = 2; /* Title and usage */
+  }
   
   if(usage) {
     if(usage > 1) {
-      fprintf(stderr, title_format_string, raptor_version_string);
+      fputs(title_string, stderr); putc(' ', stderr); fputs(raptor_version_string, stderr); putc('\n', stderr);
       fputs(raptor_short_copyright_string, stderr);
       fputc('\n', stderr);
     }
@@ -801,7 +813,7 @@ main(int argc, char *argv[])
 
   if(help) {
     printf("Usage: %s [OPTIONS] <from URI> <to URI>\n", program);
-    printf(title_format_string, raptor_version_string);
+    puts(title_string); putchar(' '); puts(raptor_version_string); putchar('\n');
     puts(raptor_short_copyright_string);
     puts("Find differences between two RDF files.");
     puts("\nOPTIONS:");

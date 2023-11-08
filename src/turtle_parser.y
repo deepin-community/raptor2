@@ -50,6 +50,7 @@
 #include <turtle_parser.h>
 
 #define YY_NO_UNISTD_H 1
+#undef yylex
 #include <turtle_lexer.h>
 
 #include <turtle_common.h>
@@ -62,14 +63,9 @@
 #endif
 
 
-#define DEBUG_FH stderr
-
-/* Make verbose error messages for syntax errors */
-#define YYERROR_VERBOSE 1
-
 /* Fail with an debug error message if RAPTOR_DEBUG > 1 */
 #if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
-#define YYERROR_MSG(msg) do { fputs("** YYERROR ", DEBUG_FH); fputs(msg, DEBUG_FH); fputc('\n', DEBUG_FH); YYERROR; } while(0)
+#define YYERROR_MSG(msg) do { fputs("** YYERROR ", RAPTOR_DEBUG_FH); fputs(msg, RAPTOR_DEBUG_FH); fputc('\n', RAPTOR_DEBUG_FH); YYERROR; } while(0)
 #else
 #define YYERROR_MSG(ignore) YYERROR
 #endif
@@ -82,7 +78,8 @@
 #endif
 
 #ifdef RAPTOR_DEBUG
-const char * turtle_token_print(raptor_world* world, int token, YYSTYPE *lval);
+const char * turtle_token_print(raptor_world* world, int token,
+                                TURTLE_PARSER_STYPE *lval);
 #endif
 
 
@@ -94,6 +91,7 @@ const char * turtle_token_print(raptor_world* world, int token, YYSTYPE *lval);
 
 /* Prototypes */ 
 int turtle_parser_error(raptor_parser* rdf_parser, void* scanner, const char *msg);
+static void turtle_parser_error_simple(void* user_data, const char *msg, ...) RAPTOR_PRINTF_FORMAT(2, 3);
 
 /* Make lex/yacc interface as small as possible */
 #undef yylex
@@ -102,21 +100,30 @@ int turtle_parser_error(raptor_parser* rdf_parser, void* scanner, const char *ms
 /* Prototypes for local functions */
 static void raptor_turtle_generate_statement(raptor_parser *parser, raptor_statement *triple);
 
+static void raptor_turtle_defer_statement(raptor_parser *parser, raptor_statement *triple);
+
+static void raptor_turtle_handle_statement(raptor_parser *parser, raptor_statement *triple);
+
 %}
 
 
 /* directives */
 
-%require "3.0.0"
+%require "3.0"
 
-/* File prefix (bison -b) */
+/* File prefix (-b) */
 %file-prefix "turtle_parser"
 
-/* Symbol prefix (bison -d : deprecated) */
-%name-prefix "turtle_parser_"
+/* Bison 2.6+ : Symbol prefix */
+%define api.prefix {turtle_parser_}
+/* Bison 3.4+ :  Generated header file */
+%define api.header.include {<turtle_parser.h>}
 
 /* Write parser header file with macros (bison -d) */
 %defines
+
+/* Make verbose error messages for syntax errors */
+%define parse.error verbose
 
 /* Write output file with verbose descriptions of parser states */
 %verbose
@@ -164,44 +171,47 @@ static void raptor_turtle_generate_statement(raptor_parser *parser, raptor_state
 %token SPARQL_BASE "BASE"
 
 /* literals */
-%token <string> STRING_LITERAL "string literal"
-%token <uri> URI_LITERAL "URI literal"
-%token <uri> GRAPH_NAME_LEFT_CURLY "Graph URI literal {"
-%token <string> BLANK_LITERAL "blank node"
-%token <uri> QNAME_LITERAL "QName"
-%token <string> IDENTIFIER "identifier"
-%token <string> LANGTAG "langtag"
-%token <string> INTEGER_LITERAL "integer literal"
-%token <string> FLOATING_LITERAL "floating point literal"
-%token <string> DECIMAL_LITERAL "decimal literal"
+%token
+  <string>
+    STRING_LITERAL "string literal"
+    IDENTIFIER "identifier"
+    LANGTAG "langtag"
+    INTEGER_LITERAL "integer literal"
+    FLOATING_LITERAL "floating point literal"
+    DECIMAL_LITERAL "decimal literal"
+    BLANK_LITERAL "blank node"
+  <uri>
+    URI_LITERAL "URI literal"
+    GRAPH_NAME_LEFT_CURLY "Graph URI literal {"
+    QNAME_LITERAL "QName"
 
 /* syntax error */
 %token ERROR_TOKEN
 
 %type <identifier> subject predicate object verb literal resource blankNode collection blankNodePropertyList
-%type <sequence> objectList itemList predicateObjectList predicateObjectListOpt
+%type <sequence> triples objectList itemList predicateObjectList predicateObjectListOpt
 
 /* tidy up tokens after errors */
 
 %destructor {
   if($$)
     RAPTOR_FREE(char*, $$);
-} STRING_LITERAL BLANK_LITERAL INTEGER_LITERAL FLOATING_LITERAL DECIMAL_LITERAL IDENTIFIER LANGTAG
+} <string>
 
 %destructor {
   if($$)
     raptor_free_uri($$);
-} URI_LITERAL QNAME_LITERAL
+} <uri>
 
 %destructor {
   if($$)
     raptor_free_term($$);
-} subject predicate object verb literal resource blankNode collection
+} <identifier>
 
 %destructor {
   if($$)
     raptor_free_sequence($$);
-} objectList itemList predicateObjectList predicateObjectListOpt
+} <sequence>
 
 %%
 
@@ -276,16 +286,78 @@ triplesList: dotTriplesList
 ;
 
 dotTriplesList: triples
+{
+  int i;
+
+  if($1) {
+    for(i = 0; i < raptor_sequence_size($1); i++) {
+      raptor_statement* t2 = (raptor_statement*)raptor_sequence_get_at($1, i);
+      raptor_turtle_generate_statement(rdf_parser, t2);
+    }
+    raptor_free_sequence($1);
+  }
+}
 | dotTriplesList DOT triples
+{
+  int i;
+
+  if($3) {
+    for(i = 0; i < raptor_sequence_size($3); i++) {
+      raptor_statement* t2 = (raptor_statement*)raptor_sequence_get_at($3, i);
+      raptor_turtle_generate_statement(rdf_parser, t2);
+    }
+    raptor_free_sequence($3);
+  }
+}
 ;
 
 statementList: statementList statement
+{
+  raptor_turtle_parser* turtle_parser;
+
+  turtle_parser = (raptor_turtle_parser*)rdf_parser->context;
+
+  /* sync up consumed/processed so we know what to unwind */
+  turtle_parser->processed = turtle_parser->consumed;
+  turtle_parser->lineno_last_good = turtle_parser->lineno;
+}
+| statementList error
 | %empty
 ;
 
 statement: directive
 | graph
 | triples DOT
+{
+  raptor_turtle_parser* turtle_parser;
+  int i;
+
+  /* yield deferred statements, if any */
+  turtle_parser = (raptor_turtle_parser*)rdf_parser->context;
+  if(turtle_parser->deferred) {
+    raptor_sequence* def = turtle_parser->deferred;
+
+    for(i = 0; i < raptor_sequence_size(def); i++) {
+      raptor_statement *t2 = (raptor_statement*)raptor_sequence_get_at(def, i);
+
+      raptor_turtle_handle_statement(rdf_parser, t2);
+    }
+  }
+
+  if($1) {
+    for(i = 0; i < raptor_sequence_size($1); i++) {
+      raptor_statement* t2 = (raptor_statement*)raptor_sequence_get_at($1, i);
+      raptor_turtle_generate_statement(rdf_parser, t2);
+    }
+    raptor_free_sequence($1);
+  }
+
+  if(turtle_parser->deferred) {
+    /* debrief resources */
+    raptor_free_sequence(turtle_parser->deferred);
+    turtle_parser->deferred = NULL;
+  }
+}
 ;
 
 triples: subject predicateObjectList
@@ -317,17 +389,12 @@ triples: subject predicateObjectList
     raptor_sequence_print($2, stdout);
     printf("\n\n");
 #endif
-    for(i = 0; i < raptor_sequence_size($2); i++) {
-      raptor_statement* t2 = (raptor_statement*)raptor_sequence_get_at($2, i);
-      raptor_turtle_generate_statement(rdf_parser, t2);
-    }
   }
-
-  if($2)
-    raptor_free_sequence($2);
 
   if($1)
     raptor_free_term($1);
+
+  $$ = $2;
 }
 | blankNodePropertyList predicateObjectListOpt
 {
@@ -358,19 +425,17 @@ triples: subject predicateObjectList
     raptor_sequence_print($2, stdout);
     printf("\n\n");
 #endif
-    for(i = 0; i < raptor_sequence_size($2); i++) {
-      raptor_statement* t2 = (raptor_statement*)raptor_sequence_get_at($2, i);
-      raptor_turtle_generate_statement(rdf_parser, t2);
-    }
   }
-
-  if($2)
-    raptor_free_sequence($2);
 
   if($1)
     raptor_free_term($1);
+
+  $$ = $2;
 }
 | error DOT
+{
+  $$ = NULL;
+}
 ;
 
 
@@ -1081,7 +1146,7 @@ blankNodePropertyList: LEFT_SQUARE predicateObjectListOpt RIGHT_SQUARE
     for(i = 0; i < raptor_sequence_size($2); i++) {
       raptor_statement* t2 = (raptor_statement*)raptor_sequence_get_at($2, i);
       t2->subject = raptor_term_copy($$);
-      raptor_turtle_generate_statement(rdf_parser, t2);
+      raptor_turtle_defer_statement(rdf_parser, t2);
     }
 
 #if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
@@ -1150,14 +1215,14 @@ collection: LEFT_ROUND itemList RIGHT_ROUND
     t2->subject = blank;
     t2->predicate = first_identifier;
     /* t2->object already set to the value we want */
-    raptor_turtle_generate_statement((raptor_parser*)rdf_parser, t2);
+    raptor_turtle_defer_statement((raptor_parser*)rdf_parser, t2);
     
     temp = t2->object;
     
     t2->subject = blank;
     t2->predicate = rest_identifier;
     t2->object = object;
-    raptor_turtle_generate_statement((raptor_parser*)rdf_parser, t2);
+    raptor_turtle_defer_statement((raptor_parser*)rdf_parser, t2);
 
     t2->subject = NULL;
     t2->predicate = NULL;
@@ -1220,12 +1285,22 @@ collection: LEFT_ROUND itemList RIGHT_ROUND
 
 /* Support functions */
 
+/* Error handler with scanner context, during parsing */
 int
-turtle_parser_error(raptor_parser* rdf_parser, void* scanner, const char *msg)
+turtle_parser_error(raptor_parser* rdf_parser, void* scanner,
+                    const char *msg)
 {
   raptor_turtle_parser* turtle_parser;
 
   turtle_parser = (raptor_turtle_parser*)rdf_parser->context;
+
+  if(turtle_parser->consumed == turtle_parser->consumable &&
+     turtle_parser->processed < turtle_parser->consumed &&
+     !turtle_parser->is_end) {
+    /* we encountered an error on or around the last byte of the buffer
+     * sorting it in the next run aye? */
+    return 0;
+  }
   
   if(turtle_parser->error_count++)
     return 0;
@@ -1239,6 +1314,43 @@ turtle_parser_error(raptor_parser* rdf_parser, void* scanner, const char *msg)
                    &rdf_parser->locator, msg);
 
   return 0;
+}
+
+
+/* Error handler within raptor functions and callbacks */
+static void
+turtle_parser_error_simple(void* user_data, const char *msg, ...)
+{
+  raptor_parser* rdf_parser = (raptor_parser*)user_data;
+  raptor_turtle_parser* turtle_parser;
+  va_list args;
+
+  va_start(args, msg);
+
+  turtle_parser = (raptor_turtle_parser*)rdf_parser->context;
+
+  if(turtle_parser->consumed == turtle_parser->consumable &&
+     turtle_parser->processed < turtle_parser->consumed &&
+     !turtle_parser->is_end) {
+    /* we encountered an error on or around the last byte of the buffer
+     * sorting it in the next run aye? */
+    goto tidy;
+  }
+  
+  if(turtle_parser->error_count++)
+    goto tidy;
+
+  rdf_parser->locator.line = turtle_parser->lineno;
+#ifdef RAPTOR_TURTLE_USE_ERROR_COLUMNS
+  rdf_parser->locator.column = turtle_lexer_get_column(yyscanner);
+#endif
+
+  raptor_log_error_varargs(rdf_parser->world, RAPTOR_LOG_LEVEL_ERROR,
+                           &rdf_parser->locator, msg,
+                           args);
+
+tidy:
+  va_end(args);
 }
 
 
@@ -1283,8 +1395,8 @@ turtle_qname_to_uri(raptor_parser *rdf_parser, unsigned char *name, size_t name_
   rdf_parser->locator.column = turtle_lexer_get_column(yyscanner);
 #endif
 
-  name_len = raptor_turtle_expand_name_escapes(name, name_len,
-                                               (raptor_simple_message_handler)turtle_parser_error, rdf_parser);
+  name_len = raptor_turtle_expand_qname_escapes(name, name_len,
+                                                (raptor_simple_message_handler)turtle_parser_error_simple, rdf_parser);
   if(!name_len)
     return NULL;
   
@@ -1313,7 +1425,7 @@ turtle_parse(raptor_parser *rdf_parser, const char *string, size_t length)
 #endif
 
   turtle_lexer_set_extra(rdf_parser, turtle_parser->scanner);
-  (void)turtle_lexer__scan_bytes((char *)string, (int)length, turtle_parser->scanner);
+  (void)turtle_lexer__scan_bytes((char *)string, (yy_size_t)length, turtle_parser->scanner);
 
   rc = turtle_parser_parse(rdf_parser, turtle_parser->scanner);
 
@@ -1353,7 +1465,7 @@ turtle_push_parse(raptor_parser *rdf_parser,
 #endif
 
   turtle_lexer_set_extra(rdf_parser, turtle_parser->scanner);
-  buffer = turtle_lexer__scan_bytes(string, length, turtle_parser->scanner);
+  buffer = turtle_lexer__scan_bytes(string, (yy_size_t)length, turtle_parser->scanner);
 
   /* returns a parser instance or 0 on out of memory */
   ps = yypstate_new();
@@ -1361,10 +1473,10 @@ turtle_push_parse(raptor_parser *rdf_parser,
     return 1;
 
   do {
-    YYSTYPE lval;
+    TURTLE_PARSER_YYSTYPE lval;
     int token;
 
-    memset(&lval, 0, sizeof(YYSTYPE));
+    memset(&lval, 0, sizeof(TURTLE_PARSER_YYSTYPE));
     
     token = turtle_lexer_lex(&lval, turtle_parser->scanner);
 
@@ -1438,15 +1550,12 @@ raptor_turtle_parse_terminate(raptor_parser *rdf_parser) {
 
 
 static void
-raptor_turtle_generate_statement(raptor_parser *parser, raptor_statement *t)
+raptor_turtle_clone_statement(raptor_parser *parser, raptor_statement *t)
 {
   raptor_turtle_parser *turtle_parser = (raptor_turtle_parser*)parser->context;
   raptor_statement *statement = &parser->statement;
 
   if(!t->subject || !t->predicate || !t->object)
-    return;
-
-  if(!parser->statement_handler)
     return;
 
   if(turtle_parser->trig && turtle_parser->graph_name)
@@ -1499,15 +1608,59 @@ raptor_turtle_generate_statement(raptor_parser *parser, raptor_statement *t)
                                                      t->object->value.literal.datatype,
                                                      t->object->value.literal.language);
   }
+}
+
+static void
+raptor_turtle_handle_statement(raptor_parser *parser, raptor_statement *t)
+{
+  if(!t->subject || !t->predicate || !t->object)
+    return;
+
+  if(!parser->statement_handler)
+    return;
 
   /* Generate the statement */
-  (*parser->statement_handler)(parser->user_data, statement);
+  (*parser->statement_handler)(parser->user_data, t);
+}
 
-  raptor_free_term(statement->subject); statement->subject = NULL;
-  raptor_free_term(statement->predicate); statement->predicate = NULL;
-  raptor_free_term(statement->object); statement->object = NULL;
-  if(statement->graph) {
-    raptor_free_term(statement->graph); statement->graph = NULL;
+static void
+raptor_turtle_generate_statement(raptor_parser *parser, raptor_statement *t)
+{
+  raptor_turtle_clone_statement(parser, t);
+  raptor_turtle_handle_statement(parser, &parser->statement);
+  /* clear resources */
+  raptor_statement_clear(&parser->statement);
+}
+
+static void
+raptor_turtle_defer_statement(raptor_parser *parser, raptor_statement *t)
+{
+  raptor_statement* st;
+  raptor_turtle_parser* turtle_parser;
+
+  raptor_turtle_clone_statement(parser, t);
+  st = raptor_new_statement(parser->world);
+  if(!st) {
+    return;
+  }
+  /* copy static to dynamic statement, it's a move really */
+  st->subject = parser->statement.subject, parser->statement.subject = NULL;
+  st->predicate = parser->statement.predicate, parser->statement.predicate = NULL;
+  st->object = parser->statement.object, parser->statement.object = NULL;
+  st->graph = parser->statement.graph, parser->statement.graph = NULL;
+
+  /* prep deferred list */
+  turtle_parser = (raptor_turtle_parser*)parser->context;
+  if(!turtle_parser->deferred) {
+    turtle_parser->deferred = raptor_new_sequence((raptor_data_free_handler)raptor_free_statement, NULL);
+    if(!turtle_parser->deferred) {
+      goto free_seq;
+    }
+  }
+  /* append to deferred list */
+  if(raptor_sequence_push(turtle_parser->deferred, st)) {
+  free_seq:
+    raptor_free_statement(st);
   }
 }
 
@@ -1518,8 +1671,8 @@ raptor_turtle_parse_chunk(raptor_parser* rdf_parser,
                           const unsigned char *s, size_t len,
                           int is_end)
 {
-  char *ptr;
   raptor_turtle_parser *turtle_parser;
+  char *ptr;
   int rc;
 
   turtle_parser = (raptor_turtle_parser*)rdf_parser->context;
@@ -1528,50 +1681,111 @@ raptor_turtle_parse_chunk(raptor_parser* rdf_parser,
   RAPTOR_DEBUG2("adding %d bytes to line buffer\n", (int)len);
 #endif
 
-  if(len) {
-    turtle_parser->buffer = RAPTOR_REALLOC(char*, turtle_parser->buffer,
-                                           turtle_parser->buffer_length + len + 1);
-    if(!turtle_parser->buffer) {
-      raptor_parser_fatal_error(rdf_parser, "Out of memory");
-      return 1;
-    }
+  if(!len && !is_end) {
+    /* nothing to do */
+    return 0;
+  }
 
-    /* move pointer to end of cdata buffer */
-    ptr = turtle_parser->buffer+turtle_parser->buffer_length;
+  /* the actual buffer will contained unprocessed characters from
+   * the last run plus the chunk passed here */
+  turtle_parser->end_of_buffer = turtle_parser->consumed + len;
+  if(turtle_parser->end_of_buffer > turtle_parser->buffer_length) {
+    /* resize */
+    size_t new_buffer_length = turtle_parser->end_of_buffer;
+
+    turtle_parser->buffer = RAPTOR_REALLOC(char*, turtle_parser->buffer,
+                                           new_buffer_length + 1);
 
     /* adjust stored length */
-    turtle_parser->buffer_length += len;
+    turtle_parser->buffer_length = new_buffer_length;
+  }
+  if(!turtle_parser->buffer && turtle_parser->buffer_length) {
+    /* we tried to alloc a buffer but we failed */
+    raptor_parser_fatal_error(rdf_parser, "Out of memory");
+    return 1;
+  }
+  if(is_end && !turtle_parser->end_of_buffer) {
+    /* Nothing to do */
+    return 0;
+  }
 
-    /* now write new stuff at end of cdata buffer */
-    memcpy(ptr, s, len);
-    ptr += len;
-    *ptr = '\0';
+  /* move pointer to end of cdata buffer */
+  ptr = turtle_parser->buffer + turtle_parser->consumed;
+
+  /* now write new stuff at end of cdata buffer */
+  memcpy(ptr, s, len);
+  ptr += len;
+  *ptr = '\0';
+
+  /* reset processed counter */
+  turtle_parser->processed = 0U;
+  /* unconsume */
+  turtle_parser->consumed = 0U;
+  /* reset line numbers */
+  turtle_parser->lineno = turtle_parser->lineno_last_good;
+
+  /* let everyone know if this is the last chunk */
+  turtle_parser->is_end = is_end;
+  if(!is_end) {
+    /* it's safer not to pass the very last line to the lexer
+     * just in case we end up with EOB-in-the-middle-of-X situations */
+    size_t i = turtle_parser->end_of_buffer;
+    while(i > 0U && turtle_parser->buffer[--i] != '\n');
+    /* either i == 0U or i points to the last \n before the end-of-buffer */
+    turtle_parser->consumable = i;
+  } else {
+    /* otherwise the consumable number of bytes coincides with the EOB */
+    turtle_parser->consumable = turtle_parser->end_of_buffer;
+  }
 
 #if defined(RAPTOR_DEBUG) && RAPTOR_DEBUG > 1
     RAPTOR_DEBUG3("buffer buffer now '%s' (%ld bytes)\n", 
                   turtle_parser->buffer, turtle_parser->buffer_length);
 #endif
-  }
-  
-  /* if not end, wait for rest of input */
-  if(!is_end)
-    return 0;
-
-  /* Nothing to do */
-  if(!turtle_parser->buffer_length)
-    return 0;
 
 #ifdef TURTLE_PUSH_PARSE
   rc = turtle_push_parse(rdf_parser, 
-			 turtle_parser->buffer, turtle_parser->buffer_length);
+                         turtle_parser->buffer, turtle_parser->consumable);
 #else
-  rc = turtle_parse(rdf_parser, turtle_parser->buffer, turtle_parser->buffer_length);
+  rc = turtle_parse(rdf_parser, turtle_parser->buffer, turtle_parser->consumable);
 #endif  
 
-  if(rdf_parser->emitted_default_graph) {
-    /* for non-TRIG - end default graph after last triple */
-    raptor_parser_end_graph(rdf_parser, NULL, 0);
-    rdf_parser->emitted_default_graph--;
+  if(turtle_parser->error_count) {
+    rc = 1;
+  } else if(!is_end) {
+    /* move stuff to the beginning of the buffer */
+    turtle_parser->consumed = turtle_parser->end_of_buffer - turtle_parser->processed;
+    if(turtle_parser->consumed && turtle_parser->processed) {
+      memmove(turtle_parser->buffer,
+              turtle_parser->buffer + turtle_parser->processed,
+              turtle_parser->consumed);
+      /* cancel all deferred eval's */
+      if(turtle_parser->deferred) {
+        raptor_free_sequence(turtle_parser->deferred);
+        turtle_parser->deferred = NULL;
+      }
+    }
+  } else {
+    /* this was the last chunk, finalise */
+    if(turtle_parser->deferred) {
+      raptor_sequence* def = turtle_parser->deferred;
+      int i;
+      for(i = 0; i < raptor_sequence_size(def); i++) {
+	raptor_statement *t2 = (raptor_statement*)raptor_sequence_get_at(def, i);
+
+	raptor_turtle_handle_statement(rdf_parser, t2);
+      }
+    }
+    if(rdf_parser->emitted_default_graph) {
+      /* for non-TRIG - end default graph after last triple */
+      raptor_parser_end_graph(rdf_parser, NULL, 0);
+      rdf_parser->emitted_default_graph--;
+    }
+    if(turtle_parser->deferred) {
+      /* clear resources */
+      raptor_free_sequence(turtle_parser->deferred);
+      turtle_parser->deferred = NULL;
+    }
   }
   return rc;
 }

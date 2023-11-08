@@ -1,19 +1,15 @@
 %{
 /*
- * Imported from
- *   PHP CVS 1.56.2.2
+ * Imported from the public domain source in PHP 4.4
  *   Fri May 20 07:14:01 2005
- *   http://cvs.php.net/php-src/ext/standard/parsedate.y
+ *   https://github.com/php/php-src/blob/379c4af44aa6456fbdbc69dba3ead166ba7ff67d/ext/standard/parsedate.y
  *
  * and patched from there
  *
- * 1.59 removed this from PHP CVS and replaced it with entirely new
- * code written under the PHP license:
- *   http://viewcvs.php.net/viewcvs.cgi/php-src/ext/date/lib/
- * That code is not used here and cannot be used.
+ * Later versions removed this from PHP and replaced it with entirely
+ * new code written under the PHP license. That code is not used here
+ * and cannot be used.
  *
- * The old version is now in the CVS Attic:
- *   http://viewcvs.php.net/viewcvs.cgi/php-src/ext/standard/Attic/parsedate.y
  */
 
 
@@ -33,11 +29,13 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <time.h>
 #include <ctype.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#include <sys/time.h>
+#endif
+#ifdef HAVE_TIME_H
+#include <time.h>
 #endif
 
 #ifdef HAVE_STDLIB_H
@@ -51,25 +49,7 @@
 #include "raptor2.h"
 #include "raptor_internal.h"
 
-#if defined (STDC_HEADERS) || (!defined (isascii) && !defined (HAVE_ISASCII))
-# define IN_CTYPE_DOMAIN(c) 1
-#else
-# define IN_CTYPE_DOMAIN(c) isascii(c)
-#endif
 
-#define ISSPACE(c) (IN_CTYPE_DOMAIN (c) && isspace (c))
-#define ISALPHA(c) (IN_CTYPE_DOMAIN (c) && isalpha (c))
-#define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper (c))
-#define ISDIGIT_LOCALE(c) (IN_CTYPE_DOMAIN (c) && isdigit (c))
-
-/* ISDIGIT differs from ISDIGIT_LOCALE, as follows:
-   - Its arg may be any int or unsigned int; it need not be an unsigned char.
-   - It's guaranteed to evaluate its argument exactly once.
-   - It's typically faster.
-   Posix 1003.2-1992 section 2.5.2.1 page 50 lines 1556-1558 says that
-   only '0' through '9' are digits.  Prefer ISDIGIT to ISDIGIT_LOCALE unless
-   it's important to use the locale's definition of `digit' even when the
-   host does not conform to Posix.  */
 #define ISDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
 #ifdef HAVE_STRING_H
@@ -162,13 +142,13 @@ static int LookupWord (YYSTYPE *lvalp, char *buff);
 
 /* directives */
 
-%require "3.0.0"
+%require "3.0"
 
 /* File prefix (bison -b) */
 %file-prefix "parsedate"
 
 /* Symbol prefix (bison -d : deprecated) */
-%name-prefix "raptor_parsedate_"
+%define api.prefix {raptor_parsedate_}
 
 /* Write parser header file with macros (bison -d) */
 %defines
@@ -264,7 +244,7 @@ zonepart_numeric_without_colon: tSNUMBER {
 		/* format: [+-]hhmm */
 		if($1 <= -100 || $1 >= 100) {
 			((struct date_yy *)parm)->yyTimezone = (-$1 / 100) * 60 + (-$1 % 100);
-		} else if($1 >= -99 || $1 <= 99) {
+		} else if($1 >= -99 && $1 <= 99) {
 			((struct date_yy *)parm)->yyTimezone = -$1 * 60;
 		}
 	}
@@ -476,8 +456,8 @@ iso8601time:
 			i %= 100;
 			((struct date_yy *)parm)->yyMinutes = i;
 	    	((struct date_yy *)parm)->yySeconds = 0;
-		} else if(i >= -99 || i <= 99) {
-			((struct date_yy *)parm)->yyHour = $1;
+		} else if(i >= -99 && i <= 99) {
+			((struct date_yy *)parm)->yyHour = i;
 			((struct date_yy *)parm)->yyMinutes = 0;
 	    	((struct date_yy *)parm)->yySeconds = 0;
 		} else {
@@ -826,7 +806,7 @@ ToHour(int Hours, MERIDIAN Meridian)
     default:
 #ifdef RAPTOR_DEBUG
       fprintf(stderr, "%s:%d:%s: UNKNOWN Meridian %d - add a new case", 
-              __FILE__, __LINE__, __func__, (int)Meridian);
+              __FILE__, __LINE__, __FUNCTION__, (int)Meridian);
 #endif
       return -1;
     }
@@ -860,7 +840,7 @@ LookupWord (YYSTYPE *lvalp, char *buff)
 
   /* Make it lowercase. */
   for(p = buff; *p; p++)
-    if(ISUPPER ((unsigned char) *p))
+    if(isupper ((unsigned char) *p))
       *p = tolower (*p);
 
   if(strcmp (buff, "am") == 0 || strcmp (buff, "a.m.") == 0)
@@ -941,7 +921,7 @@ LookupWord (YYSTYPE *lvalp, char *buff)
       }
 
   /* Military timezones. */
-  if(buff[1] == '\0' && ISALPHA ((unsigned char) *buff))
+  if(buff[1] == '\0' && isalpha ((unsigned char) *buff))
     {
       for(tp = MilitaryTable; tp->name; tp++)
 	if(strcmp (buff, tp->name) == 0)
@@ -980,10 +960,10 @@ int yylex(YYSTYPE *lvalp, void *parm)
 
   for(;;)
     {
-      while(ISSPACE ((unsigned char) *date->yyInput))
+      while(isspace ((unsigned char) *date->yyInput))
 	date->yyInput++;
 
-      if(ISDIGIT (c = *date->yyInput) || c == '-' || c == '+')
+      if(isdigit (c = *date->yyInput) || c == '-' || c == '+')
 	{
 	  if(c == '-' || c == '+')
 	    {
@@ -1011,9 +991,9 @@ int yylex(YYSTYPE *lvalp, void *parm)
 	  }
 	  return sign ? tSNUMBER : tUNUMBER;
 	}
-      if(ISALPHA (c))
+      if(isalpha (c))
 	{
-	  for(p = buff; (c = *date->yyInput++, ISALPHA (c)) || c == '.';)
+	  for(p = buff; (c = *date->yyInput++, isalpha (c)) || c == '.';)
 	    if(p < &buff[sizeof buff - 1])
 	      *p++ = c;
 	  *p = '\0';

@@ -34,7 +34,7 @@ raptor_namespace_test strcasecmp_test raptor_www_test \
 raptor_sequence_test raptor_stringbuffer_test \
 raptor_uri_win32_test raptor_iostream_test raptor_xml_writer_test \
 raptor_turtle_writer_test raptor_avltree_test raptor_term_test \
-raptor_permute_test raptor_snprintf_test
+raptor_permute_test raptor_snprintf_test raptor_sort_r_test
 if RAPTOR_PARSER_RDFXML
 TESTS += raptor_set_test raptor_xml_test
 endif
@@ -76,7 +76,8 @@ raptor_turtle_writer.c raptor_avltree.c snprintf.c \
 raptor_json_writer.c raptor_memstr.c raptor_concepts.c \
 raptor_syntax_description.c \
 raptor_sax2.c raptor_escaped.c \
-raptor_ntriples.c
+raptor_ntriples.c \
+sort_r.c sort_r.h ssort.h
 if RAPTOR_XML_LIBXML
 libraptor2_la_SOURCES += raptor_libxml.c
 endif
@@ -133,6 +134,10 @@ libraptor2_la_SOURCES += raptor_abbrev.c
 else
 if RAPTOR_SERIALIZER_TURTLE
 libraptor2_la_SOURCES += raptor_abbrev.c
+else
+if RAPTOR_SERIALIZER_MKR
+libraptor2_la_SOURCES += raptor_abbrev.c
+endif
 endif
 endif
 
@@ -141,6 +146,10 @@ libraptor2_la_SOURCES += raptor_serialize_rdfxmla.c
 endif
 if RAPTOR_SERIALIZER_TURTLE
 libraptor2_la_SOURCES += raptor_serialize_turtle.c
+else
+if RAPTOR_SERIALIZER_MKR
+libraptor2_la_SOURCES += raptor_serialize_turtle.c
+endif
 endif
 if RAPTOR_SERIALIZER_RSS_1_0
 libraptor2_la_SOURCES += raptor_serialize_rss.c
@@ -158,8 +167,8 @@ if STRCASECMP
 libraptor2_la_SOURCES += strcasecmp.c
 endif
 if PARSEDATE
-libraptor2_la_SOURCES += parsedate.c
-BUILT_SOURCES += parsedate.c
+libraptor2_la_SOURCES += parsedate.c parsedate.h
+BUILT_SOURCES += parsedate.c parsedate.h
 endif
 
 
@@ -198,26 +207,27 @@ nodist_libraptor2_la_SOURCES += git-version.h
 raptor_parse.c: git-version.h
 
 # Actually it needs turtle_parser.h but nevermind
-turtle_lexer.c: $(srcdir)/turtle_lexer.l turtle_parser.c $(top_srcdir)/scripts/fix-flex
-	$(LEX) -o$@ $(srcdir)/turtle_lexer.l
-	$(PERL) $(top_srcdir)/scripts/fix-flex $@ > turtle_lexer.t || rm -f $@
-	mv -f turtle_lexer.t $@
+turtle_lexer.c: $(srcdir)/turtle_lexer.l turtle_parser.c $(top_srcdir)/scripts/fix-flex.pl
+	$(AM_V_GEN) \
+	$(LEX) -o$@ $(srcdir)/turtle_lexer.l; \
+	for file in turtle_lexer.c turtle_lexer.h; do \
+	  $(PERL) $(top_srcdir)/scripts/fix-flex.pl $$file > turtle_lexer.t || rm -f $$file; \
+	  mv -f turtle_lexer.t $$file; \
+	done
 
 turtle_lexer.h: turtle_lexer.c ; @exit 0
 
-turtle_parser.c: $(srcdir)/turtle_parser.y $(top_srcdir)/scripts/fix-bison
-	$(BISON) $(srcdir)/turtle_parser.y
-	$(PERL) $(top_srcdir)/scripts/fix-bison turtle_parser.tab.c > $@
-	mv -f turtle_parser.tab.h turtle_parser.h
-	rm -f turtle_parser.tab.c
+turtle_parser.c: $(srcdir)/turtle_parser.y $(top_srcdir)/scripts/fix-bison.pl
+	$(AM_V_GEN) \
+	$(BISON) -o $@ $(srcdir)/turtle_parser.y; \
+	$(PERL) $(top_srcdir)/scripts/fix-bison.pl $@
 
 turtle_parser.h: turtle_parser.c ; @exit 0
 
-parsedate.c: $(srcdir)/parsedate.y $(top_srcdir)/scripts/fix-bison
-	$(BISON) $(srcdir)/parsedate.y
-	$(PERL) $(top_srcdir)/scripts/fix-bison parsedate.tab.c > $@
-	mv -f parsedate.tab.h parsedate.h
-	rm -f parsedate.tab.c
+parsedate.c: $(srcdir)/parsedate.y $(top_srcdir)/scripts/fix-bison.pl
+	$(AM_V_GEN) \
+	$(BISON) -o $@ $(srcdir)/parsedate.y; \
+	$(PERL) $(top_srcdir)/scripts/fix-bison.pl $@
 
 parsedate.h: parsedate.c ; @exit 0
 
@@ -286,6 +296,9 @@ raptor_permute_test: $(srcdir)/raptor_permute_test.c libraptor2.la
 
 raptor_snprintf_test: $(srcdir)/snprintf.c libraptor2.la
 	$(LINK) $(DEFS) $(CPPFLAGS) -I$(srcdir) -I. -DSTANDALONE $(srcdir)/snprintf.c libraptor2.la $(LIBS)
+
+raptor_sort_r_test: $(srcdir)/sort_r.c libraptor2.la
+	$(LINK) $(DEFS) $(CPPFLAGS) -I$(srcdir) -I. -DSTANDALONE $(srcdir)/sort_r.c libraptor2.la $(LIBS)
 
 $(top_builddir)/librdfa/librdfa.la:
 	cd $(top_builddir)/librdfa && $(MAKE) librdfa.la 

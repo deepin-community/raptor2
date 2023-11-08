@@ -79,6 +79,10 @@ raptor_serializers_init(raptor_world* world)
   rc += raptor_init_serializer_turtle(world) != 0;
 #endif
 
+#ifdef RAPTOR_SERIALIZER_MKR
+  rc += raptor_init_serializer_mkr(world) != 0;
+#endif
+
 #ifdef RAPTOR_SERIALIZER_RDFXML_ABBREV
   rc += raptor_init_serializer_rdfxmla(world) != 0;
 #endif
@@ -226,6 +230,25 @@ raptor_get_serializer_factory(raptor_world* world, const char *name)
   }
         
   return factory;
+}
+
+
+/**
+ * raptor_world_get_serializers_count:
+ * @world: world object
+ *
+ * Get number of serializers
+ *
+ * Return value: number of serializers or <0 on failure
+ **/
+int
+raptor_world_get_serializers_count(raptor_world* world)
+{
+  RAPTOR_ASSERT_OBJECT_POINTER_RETURN_VALUE(world, raptor_world, -1);
+
+  raptor_world_open(world);
+
+  return raptor_sequence_size(world->serializers);
 }
 
 

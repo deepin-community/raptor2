@@ -11,10 +11,10 @@ Overview
    (RDF) triples by parsing syntaxes or serialize the triples into a
    syntax. The supported parsing syntaxes are RDF/XML, N-Quads, N-Triples
    1.0 and 1.1, TRiG, Turtle 2008 and 2013, RDFa 1.0 and 1.1, RSS tag soup
-   including all versions of RSS, Atom 1.0 and 0.3, GRDDL and microformats
-   for HTML, XHTML and XML. The serializing syntaxes are RDF/XML (regular,
-   abbreviated, XMP), Turtle 2013, N-Quads, N-Triples 1.1, Atom 1.0, RSS
-   1.0, GraphViz DOT, HTML and JSON.
+   including all versions of RSS, Atom 0.3 and Atom 1.0, GRDDL and
+   microformats for HTML, XHTML and XML. The serializing syntaxes are
+   RDF/XML (regular, abbreviated, XMP), Turtle 2013, N-Quads, N-Triples
+   1.1, Atom 1.0, RSS 1.0, GraphViz DOT, HTML, JSON and mKR.
 
    Raptor was designed to work closely with the Redland RDF library (RDF
    Parser Toolkit for Redland) but is entirely separate. It is a portable
@@ -38,7 +38,8 @@ Overview
      * Fast
      * Standalone rapper RDF parser utility program
 
-   Known bugs and issues are recorded in the Redland issue tracker.
+   Known bugs and issues are recorded in the Redland issue tracker or at
+   GitHub issues for Raptor.
 
 Parsers
 
@@ -73,11 +74,10 @@ Parsers
 
   TRiG Parser
 
-   A parser for the TriG - Turtle with Named Graphs syntax; part of the
-   Turtle parser code.
+   A parser for the RDF 1.1 TriG RDF Dataset Language.
 
-   The parser is alpha quality and may not support the entire TRiG
-   specification.
+   The parser does not support the entire 1.1 TRiG specification; the '{'
+   ... '}' around a graph and the GRAPH keyword may not be omitted.
 
   RSS "tag soup" parser
 
@@ -88,7 +88,7 @@ Parsers
    triples for RSS enclosures.
 
    This parser also provides support for the Atom 1.0 syndication format
-   defined in IETF RFC 4287
+   defined in IETF RFC 4287 as well as the earlier Atom 0.3.
 
   GRDDL and microformats parser
 
@@ -174,6 +174,10 @@ Serializers
    An alpha quality serializer to the Adobe XMP profile of RDF/XML
    suitable for embedding inside an external document.
 
+  mKR Serializer
+
+   A serializer for the mKR (my Knowledge Representation) Language
+
 Documentation
 
    The public API is described in the libraptor.3 UNIX manual page. It is
@@ -188,9 +192,9 @@ Documentation
 Sources
 
    The packaged sources are available from
-   http://download.librdf.org/source/ (master site) and also from the
-   SourceForge site. The development GIT sources can also be browsed at
-   GitHub or checked out at git://github.com/dajobe/raptor.git
+   http://download.librdf.org/source/ (master site) The development GIT
+   sources can also be browsed at GitHub or checked out at
+   git://github.com/dajobe/raptor.git
 
 License
 
@@ -203,5 +207,5 @@ Mailing Lists
    and Redland as well as future plans and announcement of releases.
      __________________________________________________________________
 
-   Copyright (C) 2000-2014 Dave Beckett
+   Copyright (C) 2000-2023 Dave Beckett
    Copyright (C) 2000-2005 University of Bristol

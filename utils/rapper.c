@@ -76,7 +76,7 @@ static int quiet = 0;
 /* just count, no printing */
 static int count = 0;
 
-static int triple_count = 0;
+static long triple_count = 0;
 
 static raptor_serializer* serializer = NULL;
 
@@ -123,7 +123,8 @@ static
 void print_graph(void *user_data, raptor_uri *graph, int flags)
 {
   /* raptor_parser *parser = (raptor_parser *)user_data; */
-  const char* label = (flags & RAPTOR_GRAPH_MARK_START) ? "start" : "end";
+  const char* const label = (flags & RAPTOR_GRAPH_MARK_START)
+    ? (const char*)"start" : (const char*)"end";
 
   if(!report_graph)
     return;
@@ -219,8 +220,8 @@ static int warning_count = 0;
 static int ignore_warnings = 0;
 static int ignore_errors = 0;
 
-static const char * const title_format_string = 
-  "Raptor RDF syntax parsing and serializing utility %s\n";
+static const char * const title_string =
+  "Raptor RDF syntax parsing and serializing utility";
 
 
 static void
@@ -297,7 +298,7 @@ typedef struct
 {
   raptor_option option;
   int i_value;
-  char* s_value;
+  const char* s_value;
 } option_value;
 
 
@@ -481,7 +482,7 @@ main(int argc, char *argv[])
                   if(name_len < arg_len && optarg[name_len] == '=')
                     fv->s_value = &optarg[name_len + 1];
                   else if(name_len == arg_len)
-                    fv->s_value = (char*)"";
+                    fv->s_value = (const char*)"";
                 }
 
                 if(domain == RAPTOR_DOMAIN_PARSER) {
@@ -635,7 +636,7 @@ main(int argc, char *argv[])
   
   if(usage) {
     if(usage > 1) {
-      fprintf(stderr, title_format_string, raptor_version_string);
+      fputs(title_string, stderr); putc(' ', stderr); fputs(raptor_version_string, stderr); putc('\n', stderr);
       fputs("Raptor home page: ", stderr);
       fputs(raptor_home_url_string, stderr);
       fputc('\n', stderr);
@@ -654,7 +655,7 @@ main(int argc, char *argv[])
   if(help) {
     int i;
     
-    printf(title_format_string, raptor_version_string);
+    puts(title_string); putchar(' '); puts(raptor_version_string); putchar('\n');
     puts("Parse RDF syntax from a source into serialized RDF triples.");
     printf("Usage: %s [OPTIONS] INPUT-URI [INPUT-BASE-URI]\n\n", program);
 
@@ -939,7 +940,7 @@ main(int argc, char *argv[])
       fprintf(stderr, "%s: Parsing returned 1 triple\n",
               program);
     else
-      fprintf(stderr, "%s: Parsing returned %d triples\n",
+      fprintf(stderr, "%s: Parsing returned %ld triples\n",
               program, triple_count);
   }
   

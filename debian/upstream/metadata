@@ -1,0 +1,12 @@
+Bug-Database: 
+  - "https://bugs.librdf.org/mantis/view_all_bug_page.php"
+  - "https://github.com/dajobe/raptor/issues"
+Bug-Submit: 
+  - "https://bugs.librdf.org/mantis/view_all_bug_page.php"
+  - "https://github.com/dajobe/raptor/issues"
+Changelog: "https://github.com/dajobe/raptor/blob/master/ChangeLog"
+Documentation: "https://librdf.org/docs/"
+FAQ: "https://librdf.org/FAQS.html"
+Other-References: "https://librdf.org"
+Repository: "https://github.com/dajobe/raptor.git"
+Repository-Browse: "https://github.com/dajobe/raptor"
